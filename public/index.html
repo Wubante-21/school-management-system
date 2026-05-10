@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduTrack — Student Management Platform</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #5b5f97;
+  --primary-dark: #484b7a;
+  --secondary: #6b8cae;
+  --accent: #7a9bb5;
+  --success: #6a9f8a;
+  --warning: #b8944a;
+  --danger: #b55a5a;
+  --bg: #f4f5fa;
+  --bg-card: #ffffff;
+  --bg-elevated: #ffffff;
+  --text: #1e2030;
+  --text-secondary: #6b7089;
+  --text-muted: #9ca0b5;
+  --border: #e2e4ed;
+  --shadow-sm: rgba(0,0,0,0.04);
+  --shadow-md: rgba(0,0,0,0.06);
+  --shadow-lg: rgba(0,0,0,0.1);
+  --glow-primary: rgba(91,95,151,0.08);
+  --glow-secondary: rgba(107,140,174,0.06);
+  --glow-accent: rgba(122,155,181,0.05);
+  --font: 'Inter', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: var(--font); background: var(--bg); min-height: 100vh; color: var(--text); overflow-x: hidden; }
+
+/* ── Animated Background ── */
+.bg-canvas {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 0% 20%, rgba(91,95,151,0.04) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 100% 80%, rgba(107,140,174,0.03) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 30% at 50% 0%, rgba(122,155,181,0.02) 0%, transparent 50%);
+}
+.bg-canvas::after {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.008) 2px, rgba(0,0,0,0.008) 4px);
+  pointer-events: none;
+}
+
+/* ── Particles ── */
+#particles-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+
+/* ── Glow Orbs ── */
+.glow-orb {
+  position: fixed; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0;
+  animation: orbFloat 20s ease-in-out infinite;
+}
+.glow-orb-1 { width: 400px; height: 400px; background: rgba(91,95,151,0.03); top: -10%; left: -5%; }
+.glow-orb-2 { width: 350px; height: 350px; background: rgba(107,140,174,0.025); bottom: -10%; right: -5%; animation-delay: -7s; }
+.glow-orb-3 { width: 250px; height: 250px; background: rgba(122,155,181,0.02); top: 40%; left: 30%; animation-delay: -14s; }
+.glow-orb-4 { width: 300px; height: 300px; background: rgba(91,95,151,0.025); top: 60%; right: 10%; animation-delay: -4s; }
+@keyframes orbFloat {
+  0%,100% { transform: translate(0,0) scale(1); }
+  25% { transform: translate(40px,-30px) scale(1.1); }
+  50% { transform: translate(-20px,40px) scale(0.9); }
+  75% { transform: translate(30px,20px) scale(1.05); }
+}
+
+/* ── Split Layout ── */
+.split-layout {
+  position: relative; z-index: 2;
+  display: flex; min-height: 100vh; width: 100%;
+}
+
+/* ── Navbar ── */
+.navbar-premium {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  padding: 0 48px; height: 72px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.85); backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  animation: fadeDown 0.8s ease;
+}
+@keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+.navbar-premium .brand {
+  display: flex; align-items: center; gap: 12px; text-decoration: none;
+}
+.navbar-premium .brand .brand-icon {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff;
+  box-shadow: 0 4px 12px rgba(91,95,151,0.15);
+}
+.navbar-premium .brand span { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+.navbar-premium .nav-center { display: flex; align-items: center; gap: 2px; }
+.navbar-premium .nav-center a {
+  padding: 8px 18px; font-size: 13px; font-weight: 500; color: var(--text-secondary);
+  text-decoration: none; border-radius: 8px; transition: all 0.3s ease; cursor: pointer;
+}
+.navbar-premium .nav-center a:hover,
+.navbar-premium .nav-center a.active { color: var(--primary); background: rgba(91,95,151,0.06); }
+.navbar-premium .nav-right { display: flex; align-items: center; gap: 8px; }
+.navbar-premium .nav-right .btn-auth {
+  padding: 8px 20px; border: none; border-radius: 8px; font-size: 13px; font-weight: 500;
+  font-family: var(--font); cursor: pointer; transition: all 0.3s ease;
+  background: transparent; color: var(--text-secondary);
+}
+.navbar-premium .nav-right .btn-auth:hover { color: var(--primary); background: rgba(91,95,151,0.06); }
+.navbar-premium .nav-right .btn-auth.active {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff; box-shadow: 0 4px 16px rgba(91,95,151,0.15);
+}
+.navbar-premium .nav-right .btn-auth.active:hover { box-shadow: 0 6px 24px rgba(91,95,151,0.2); transform: translateY(-1px); }
+
+/* ── Left Hero ── */
+.hero-panel {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  padding: 120px 60px 60px; position: relative;
+}
+.hero-content { max-width: 580px; width: 100%; }
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 16px 6px 6px; border-radius: 100px;
+  background: rgba(91,95,151,0.06); border: 1px solid rgba(91,95,151,0.12);
+  font-size: 12px; font-weight: 500; color: var(--primary); margin-bottom: 28px;
+  animation: fadeUp 1s ease 0.2s both;
+}
+.hero-badge .badge-dot {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff;
+}
+
+.hero-title {
+  font-size: clamp(36px,5vw,56px); font-weight: 800; line-height: 1.08;
+  letter-spacing: -1.5px; color: var(--text); margin-bottom: 20px;
+  animation: fadeUp 1s ease 0.3s both;
+}
+.hero-title .gradient-text {
+  background: linear-gradient(135deg, #8b8fba, #a8b9d1, #b5cddb);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.hero-title .typing-cursor { display: inline-block; width: 2px; height: 0.8em; background: #8b8fba; margin-left: 4px; animation: blink 1s step-end infinite; vertical-align: baseline; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+.hero-desc {
+  font-size: 16px; line-height: 1.8; color: var(--text-secondary); margin-bottom: 36px; max-width: 480px;
+  animation: fadeUp 1s ease 0.4s both;
+}
+
+.hero-actions {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 48px;
+  animation: fadeUp 1s ease 0.5s both;
+}
+.hero-actions .btn-primary-custom {
+  padding: 14px 32px; border: none; border-radius: 12px; font-size: 15px; font-weight: 600;
+  font-family: var(--font); cursor: pointer; position: relative; overflow: hidden;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 10px;
+  box-shadow: 0 4px 20px rgba(91,95,151,0.2);
+}
+.hero-actions .btn-primary-custom:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(91,95,151,0.3); }
+.hero-actions .btn-primary-custom .ripple { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.3); transform: scale(0); animation: rippleAnim 0.6s ease-out; pointer-events: none; }
+@keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+.hero-actions .btn-ghost {
+  padding: 14px 28px; border: 1px solid var(--border); border-radius: 12px;
+  font-size: 15px; font-weight: 500; font-family: var(--font); cursor: pointer;
+  background: var(--bg-card); color: var(--text-secondary); transition: all 0.3s ease;
+  display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+}
+.hero-actions .btn-ghost:hover { background: var(--bg-elevated); border-color: var(--primary); color: var(--primary); }
+
+/* ── Feature Cards ── */
+.feature-grid {
+  display: grid; grid-template-columns: repeat(2,1fr); gap: 12px;
+  animation: fadeUp 1s ease 0.6s both;
+}
+.feature-card {
+  padding: 18px 20px; border-radius: 14px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  transition: all 0.4s ease; cursor: default; position: relative; overflow: hidden;
+  box-shadow: 0 1px 3px var(--shadow-sm);
+}
+.feature-card::before {
+  content: ''; position: absolute; inset: 0; opacity: 0;
+  background: linear-gradient(135deg, rgba(91,95,151,0.04), transparent);
+  transition: opacity 0.4s ease;
+}
+.feature-card:hover { transform: translateY(-4px); border-color: rgba(91,95,151,0.2); box-shadow: 0 4px 16px var(--shadow-md); }
+.feature-card:hover::before { opacity: 1; }
+.feature-card .fc-icon {
+  width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 15px; margin-bottom: 12px;
+}
+.feature-card .fc-icon.purple { background: rgba(91,95,151,0.1); color: var(--primary); }
+.feature-card .fc-icon.blue { background: rgba(107,140,174,0.1); color: var(--secondary); }
+.feature-card .fc-icon.green { background: rgba(106,159,138,0.1); color: var(--success); }
+.feature-card .fc-icon.gold { background: rgba(184,148,74,0.1); color: var(--warning); }
+.feature-card h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.feature-card p { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
+
+/* ── Stats Bar ── */
+.hero-stats {
+  display: flex; gap: 32px; margin-top: 36px; padding-top: 28px;
+  border-top: 1px solid var(--border);
+  animation: fadeUp 1s ease 0.7s both;
+}
+.hero-stat .hs-number { font-size: 28px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+.hero-stat .hs-number .hs-plus { color: var(--primary); font-size: 20px; }
+.hero-stat .hs-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+/* ── Right Auth Panel ── */
+.auth-panel {
+  width: 480px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 120px 40px 60px; position: relative;
+}
+.auth-card {
+  width: 100%; max-width: 400px;
+  padding: 36px 32px;
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 40px var(--shadow-lg);
+  animation: fadeUp 1s ease 0.5s both;
+}
+.auth-card .auth-header { text-align: center; margin-bottom: 28px; }
+.auth-card .auth-header h3 { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.auth-card .auth-header p { font-size: 13px; color: var(--text-secondary); margin: 0; }
+
+.auth-tab-switch {
+  display: flex; background: var(--bg); border-radius: 10px; padding: 4px; margin-bottom: 24px;
+  border: 1px solid var(--border);
+}
+.auth-tab-switch .ats-btn {
+  flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 13px; font-weight: 500;
+  font-family: var(--font); cursor: pointer; transition: all 0.3s ease;
+  background: transparent; color: var(--text-secondary);
+}
+.auth-tab-switch .ats-btn.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 1px 4px var(--shadow-sm); }
+.auth-tab-switch .ats-btn:hover:not(.active) { color: var(--text); }
+
+.form-floating-group { margin-bottom: 18px; position: relative; }
+.form-floating-group label {
+  display: block; font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  margin-bottom: 6px; letter-spacing: 0.3px; text-transform: uppercase;
+}
+.form-floating-group .input-wrap {
+  display: flex; align-items: center;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; transition: all 0.3s ease;
+}
+.form-floating-group .input-wrap:focus-within {
+  border-color: var(--primary); box-shadow: 0 0 0 3px rgba(91,95,151,0.08);
+}
+.form-floating-group .input-wrap .input-icon {
+  padding: 0 14px; color: var(--text-muted); font-size: 14px; flex-shrink: 0;
+}
+.form-floating-group .input-wrap input,
+.form-floating-group .input-wrap select,
+.form-floating-group .input-wrap textarea {
+  flex: 1; padding: 13px 14px 13px 0; border: none; background: transparent;
+  font-size: 14px; font-family: var(--font); color: var(--text); outline: none;
+}
+.form-floating-group .input-wrap input::placeholder,
+.form-floating-group .input-wrap textarea::placeholder { color: var(--text-muted); }
+.form-floating-group .input-wrap input:-webkit-autofill,
+.form-floating-group .input-wrap input:-webkit-autofill:hover,
+.form-floating-group .input-wrap input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--bg) inset !important;
+  -webkit-text-fill-color: var(--text) !important;
+}
+.form-floating-group .input-wrap .toggle-pass {
+  padding: 0 14px; border: none; background: none; color: var(--text-muted); cursor: pointer; font-size: 14px;
+}
+.form-floating-group .input-wrap .toggle-pass:hover { color: var(--text-secondary); }
+.form-floating-group .input-wrap.is-invalid { border-color: var(--danger); }
+.form-floating-group .input-wrap.is-valid { border-color: var(--success); }
+.form-floating-group .invalid-msg { font-size: 12px; color: var(--danger); margin-top: 4px; display: none; }
+.form-floating-group .input-wrap.is-invalid ~ .invalid-msg { display: block; }
+.form-floating-group select.form-control option { background: var(--bg-card); color: var(--text); }
+
+.form-options {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;
+}
+.form-options .remember-me {
+  display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); cursor: pointer;
+}
+.form-options .remember-me input[type="checkbox"] {
+  width: 16px; height: 16px; accent-color: var(--primary); border-radius: 4px; cursor: pointer;
+}
+.form-options .forgot-link { font-size: 13px; color: var(--text-secondary); text-decoration: none; cursor: pointer; }
+.form-options .forgot-link:hover { color: var(--primary); }
+
+.btn-submit {
+  width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600;
+  font-family: var(--font); cursor: pointer; position: relative; overflow: hidden;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #fff; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 4px 20px rgba(91,95,151,0.15);
+}
+.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(91,95,151,0.25); }
+.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.btn-submit .spinner {
+  display: none; width: 18px; height: 18px;
+  border: 2px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+.btn-submit.loading .spinner { display: inline-block; }
+.btn-submit.loading .btn-text { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.social-divider {
+  display: flex; align-items: center; gap: 16px; margin: 20px 0; color: var(--text-muted); font-size: 12px;
+}
+.social-divider::before,
+.social-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.social-auth { display: flex; gap: 10px; }
+.social-auth .social-btn {
+  flex: 1; padding: 11px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg); color: var(--text-secondary); font-size: 16px; cursor: pointer;
+  transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font); text-decoration: none;
+}
+.social-auth .social-btn:hover { background: var(--bg-card); border-color: var(--primary); color: var(--primary); transform: translateY(-1px); }
+
+/* ── Forgot Password Modal ── */
+.forgot-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.forgot-overlay.show { display: flex; }
+.forgot-modal {
+  width: 100%; max-width: 400px; padding: 32px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 20px; box-shadow: 0 24px 80px var(--shadow-lg);
+  animation: fadeUp 0.3s ease;
+}
+.forgot-modal h3 { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.forgot-modal p { font-size: 13px; color: var(--text-secondary); margin-bottom: 20px; }
+.forgot-modal .close-forgot {
+  background: none; border: none; color: var(--text-muted);
+  font-size: 20px; cursor: pointer; float: right; padding: 4px 8px;
+}
+
+/* ── Toast ── */
+.toast-container {
+  position: fixed; bottom: 24px; right: 24px; z-index: 300;
+  display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+}
+.toast-item {
+  pointer-events: all; padding: 14px 20px; border-radius: 12px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  box-shadow: 0 8px 32px var(--shadow-lg);
+  display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--text);
+  transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  max-width: 380px;
+}
+.toast-item.show { transform: translateX(0); }
+.toast-item.error { border-left: 3px solid var(--danger); }
+.toast-item.success { border-left: 3px solid var(--success); }
+.toast-item.info { border-left: 3px solid var(--secondary); }
+.toast-item i { font-size: 16px; }
+.toast-item.error i { color: var(--danger); }
+.toast-item.success i { color: var(--success); }
+.toast-item.info i { color: var(--secondary); }
+
+/* ── Tab Content ── */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.page-section { display: none; }
+.page-section.active { display: block; }
+.hero-default { display: none; }
+.hero-default.active { display: block; }
+
+/* ── Page Sections ── */
+.page-section {
+  padding: 0; width: 100%;
+}
+.page-section h3 {
+  font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px;
+}
+.page-section p {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.7; margin-bottom: 16px;
+}
+.page-section .btn-back {
+  padding: 10px 24px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg-card); color: var(--text-secondary); font-size: 13px; font-weight: 500;
+  font-family: var(--font); cursor: pointer; transition: all 0.3s ease;
+}
+.page-section .btn-back:hover { background: var(--bg-elevated); border-color: var(--primary); color: var(--primary); }
+
+/* ── Footer ── */
+.site-footer {
+  position: relative; z-index: 2;
+  padding: 40px 48px 24px;
+  border-top: 1px solid var(--border);
+  background: rgba(255,255,255,0.6); backdrop-filter: blur(12px);
+}
+.site-footer .footer-inner {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+}
+.site-footer .footer-inner .copyright { font-size: 12px; color: var(--text-muted); }
+.site-footer .footer-inner .copyright a { color: var(--text-secondary); text-decoration: none; }
+.site-footer .footer-inner .copyright a:hover { color: var(--primary); }
+.site-footer .footer-inner .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+.site-footer .footer-inner .footer-links a {
+  font-size: 12px; color: var(--text-muted); text-decoration: none; transition: color 0.3s ease;
+}
+.site-footer .footer-inner .footer-links a:hover { color: var(--text); }
+
+/* ── Animations ── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .auth-panel { width: 420px; padding: 120px 24px 60px; }
+}
+@media (max-width: 900px) {
+  .split-layout { flex-direction: column; }
+  .hero-panel { padding: 100px 24px 40px; }
+  .hero-content { max-width: 100%; }
+  .auth-panel { width: 100%; padding: 20px 24px 60px; }
+  .auth-card { max-width: 420px; }
+  .navbar-premium { padding: 0 20px; height: 64px; }
+  .navbar-premium .nav-center { display: none; }
+  .feature-grid { grid-template-columns: repeat(2,1fr); }
+  .site-footer { padding: 24px 20px; }
+  .site-footer .footer-inner { flex-direction: column; text-align: center; }
+}
+@media (max-width: 480px) {
+  .hero-title { font-size: 28px; }
+  .hero-stats { gap: 20px; flex-wrap: wrap; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .auth-card { padding: 28px 20px; }
+  .hero-actions { flex-direction: column; width: 100%; }
+  .hero-actions .btn-primary-custom,
+  .hero-actions .btn-ghost { width: 100%; justify-content: center; }
+  .social-auth { flex-direction: column; }
+  .navbar-premium .brand span { font-size: 15px; }
+}
+
+/* ── Alert (for contact form) ── */
+.alert-custom {
+  padding: 12px 16px; border-radius: 10px; font-size: 13px; margin-bottom: 16px;
+  display: none; align-items: center; gap: 8px;
+}
+.alert-custom.show { display: flex; }
+.alert-custom.error { background: rgba(181,90,90,0.06); border: 1px solid rgba(181,90,90,0.15); color: #a05555; }
+.alert-custom.success { background: rgba(106,159,138,0.06); border: 1px solid rgba(106,159,138,0.15); color: #4d7f6b; }
+.alert-custom i { font-size: 14px; }
+
+/* Contact details in page section */
+.contact-detail {
+  display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-secondary);
+  padding: 10px 14px; background: var(--bg-card); border-radius: 10px; border: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+.contact-detail i { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+  background: rgba(91,95,151,0.08); border-radius: 8px; color: var(--primary); font-size: 12px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="bg-canvas"></div>
+<div class="glow-orb glow-orb-1"></div>
+<div class="glow-orb glow-orb-2"></div>
+<div class="glow-orb glow-orb-3"></div>
+<div class="glow-orb glow-orb-4"></div>
+<canvas id="particles-canvas"></canvas>
+
+<!-- Navbar -->
+<nav class="navbar-premium">
+  <a href="#" class="brand" onclick="showSection('home'); return false;">
+    <div class="brand-icon"><i class="fas fa-graduation-cap"></i></div>
+    <span>EduTrack</span>
+  </a>
+  <div class="nav-center">
+    <a class="active" data-section="home" href="#" onclick="showSection('home');return false">Home</a>
+    <a data-section="about" href="#" onclick="showSection('about');return false">About</a>
+    <a data-section="profile" href="#" onclick="showSection('profile');return false">Profile</a>
+    <a data-section="contact" href="#" onclick="showSection('contact');return false">Contact</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn-auth" data-tab="login" onclick="switchTab('login')">Sign In</button>
+    <button class="btn-auth active" data-tab="register" onclick="switchTab('register')">Register</button>
+  </div>
+</nav>
+
+<!-- Split Layout -->
+<div class="split-layout">
+
+  <!-- Left Panel -->
+  <div class="hero-panel">
+    <div class="hero-content">
+
+      <div class="hero-default active" id="heroDefault">
+        <div class="hero-badge">
+          <span class="badge-dot"><i class="fas fa-rocket"></i></span>
+          <span>Smart Education Platform — v3.0</span>
+        </div>
+        <h1 class="hero-title">
+          The Future of<br>
+          <span class="gradient-text">Student Management</span><span class="typing-cursor"></span>
+        </h1>
+        <p class="hero-desc">
+          A modern, AI-powered platform that streamlines administration, enhances communication, 
+          and empowers educators to deliver exceptional learning experiences.
+        </p>
+        <div class="hero-actions">
+          <button class="btn-primary-custom" onclick="switchTab('register')">
+            <i class="fas fa-sparkles"></i> Get Started Free
+            <span class="ripple"></span>
+          </button>
+          <a href="#" class="btn-ghost" onclick="switchTab('login')">
+            <i class="fas fa-play-circle"></i> Watch Demo
+          </a>
+        </div>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="fc-icon purple"><i class="fas fa-users"></i></div>
+            <h4>Student Management</h4>
+            <p>Enroll, track, and manage student records with ease.</p>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon blue"><i class="fas fa-calendar-check"></i></div>
+            <h4>Attendance Tracking</h4>
+            <p>Real-time attendance with analytics and reporting.</p>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon green"><i class="fas fa-chart-line"></i></div>
+            <h4>Grade Analytics</h4>
+            <p>Visual performance dashboards for every student.</p>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon gold"><i class="fas fa-message"></i></div>
+            <h4>Communication</h4>
+            <p>Built-in messaging between teachers and parents.</p>
+          </div>
+        </div>
+
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hs-number"><span class="counter" data-target="12.5">0</span><span class="hs-plus">K+</span></div>
+            <div class="hs-label">Active Students</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hs-number"><span class="counter" data-target="850">0</span><span class="hs-plus">+</span></div>
+            <div class="hs-label">Instructors</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hs-number"><span class="counter" data-target="340">0</span><span class="hs-plus">+</span></div>
+            <div class="hs-label">Courses</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hs-number"><span class="counter" data-target="98">0</span><span class="hs-plus">%</span></div>
+            <div class="hs-label">Satisfaction</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- About Section -->
+      <div class="page-section" id="sectionAbout">
+        <h3>About EduTrack</h3>
+        <p>EduTrack is a comprehensive education management platform designed to streamline administrative tasks, enhance communication between stakeholders, and improve learning outcomes for educational institutions worldwide. Our platform serves over 12,000 students across 340+ courses with a dedicated team of 850 instructors.</p>
+        <button class="btn-back" onclick="showSection('home')"><i class="fas fa-arrow-left"></i> Back to Home</button>
+      </div>
+
+      <!-- Profile Section -->
+      <div class="page-section" id="sectionProfile">
+        <h3>Your Profile</h3>
+        <p>Sign in to access your profile dashboard where you can manage personal information, view academic records, track attendance, and update account settings.</p>
+        <button class="btn-back" onclick="switchTab('login')"><i class="fas fa-sign-in-alt"></i> Sign In</button>
+        <button class="btn-back" style="margin-left:8px;" onclick="showSection('home')"><i class="fas fa-arrow-left"></i> Back</button>
+      </div>
+
+      <!-- Contact Section -->
+      <div class="page-section" id="sectionContact">
+        <h3>Contact Us</h3>
+        <p>Have questions? Our team is here to help you get the most out of EduTrack.</p>
+        <div class="contact-detail"><i class="fas fa-envelope"></i> support@edutrack.edu</div>
+        <div class="contact-detail"><i class="fas fa-phone"></i> +1 (234) 567-890</div>
+        <div class="contact-detail"><i class="fas fa-map-marker-alt"></i> 123 University Ave, Education District</div>
+        <div style="margin-top:16px;">
+          <div class="form-floating-group">
+            <label>Your Name</label>
+            <div class="input-wrap">
+              <span class="input-icon"><i class="fas fa-user"></i></span>
+              <input type="text" id="contactName" placeholder="Enter your name">
+            </div>
+          </div>
+          <div class="form-floating-group">
+            <label>Email</label>
+            <div class="input-wrap">
+              <span class="input-icon"><i class="fas fa-envelope"></i></span>
+              <input type="email" id="contactEmail" placeholder="Enter your email">
+            </div>
+          </div>
+          <div class="form-floating-group">
+            <label>Message</label>
+            <div class="input-wrap">
+              <span class="input-icon"><i class="fas fa-pen"></i></span>
+              <textarea id="contactMessage" placeholder="Write your message..." style="padding:13px 14px 13px 0;min-height:80px;"></textarea>
+            </div>
+          </div>
+          <button class="btn-submit" onclick="sendContact()"><i class="fas fa-paper-plane"></i> Send Message</button>
+        </div>
+        <div class="alert-custom" id="contactAlert"></div>
+        <button class="btn-back" style="margin-top:12px;" onclick="showSection('home')"><i class="fas fa-arrow-left"></i> Back</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Right Auth Panel -->
+  <div class="auth-panel">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h3>Welcome Back</h3>
+        <p>Sign in to your account or create a new one</p>
+      </div>
+      <div class="auth-tab-switch">
+        <button class="ats-btn active" onclick="switchTab('login')">Sign In</button>
+        <button class="ats-btn" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <div id="alertMessage" class="alert-custom"></div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="tab-content active" novalidate onsubmit="handleLogin(event)">
+        <div class="form-floating-group">
+          <label>Email Address</label>
+          <div class="input-wrap">
+            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+            <input type="email" id="loginEmail" placeholder="you@university.edu" required>
+          </div>
+        </div>
+        <div class="form-floating-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <span class="input-icon"><i class="fas fa-lock"></i></span>
+            <input type="password" id="loginPassword" placeholder="Enter your password" required minlength="4">
+            <button type="button" class="toggle-pass" onclick="toggleField('loginPassword',this)"><i class="fas fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="form-options">
+          <label class="remember-me">
+            <input type="checkbox" checked> Remember me
+          </label>
+          <a class="forgot-link" onclick="showForgotPassword()">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn-submit" id="loginBtn">
+          <span class="btn-text">Sign In</span>
+          <span class="spinner"></span>
+        </button>
+        <div class="social-divider">or continue with</div>
+        <div class="social-auth">
+          <button type="button" class="social-btn" onclick="socialLogin('google')"><i class="fab fa-google"></i> Google</button>
+          <button type="button" class="social-btn" onclick="socialLogin('github')"><i class="fab fa-github"></i> GitHub</button>
+        </div>
+      </form>
+      <!-- Register Form -->
+      <form id="registerForm" class="tab-content" novalidate onsubmit="handleRegister(event)">
+        <div class="form-floating-group">
+          <label>Full Name</label>
+          <div class="input-wrap">
+            <span class="input-icon"><i class="fas fa-user"></i></span>
+            <input type="text" id="regName" placeholder="John Doe" required>
+          </div>
+        </div>
+        <div class="form-floating-group">
+          <label>Email Address</label>
+          <div class="input-wrap">
+            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+            <input type="email" id="regEmail" placeholder="you@university.edu" required>
+          </div>
+        </div>
+        <div class="form-floating-group">
+          <label>Password</label>
+          <div class="input-wrap">
+            <span class="input-icon"><i class="fas fa-lock"></i></span>
+            <input type="password" id="regPassword" placeholder="Min 6 characters" required minlength="6">
+            <button type="button" class="toggle-pass" onclick="toggleField('regPassword',this)"><i class="fas fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="form-floating-group">
+          <label>Role</label>
+          <div class="input-wrap">
+            <span class="input-icon"><i class="fas fa-users"></i></span>
+            <select id="regRole" required>
+              <option value="">Select your role</option>
+              <option value="student">Student</option>
+              <option value="teacher">Teacher</option>
+              <option value="parent">Parent</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn-submit" id="registerBtn">
+          <span class="btn-text">Create Account</span>
+          <span class="spinner"></span>
+        </button>
+        <div class="social-divider">or continue with</div>
+        <div class="social-auth">
+          <button type="button" class="social-btn" onclick="socialLogin('google')"><i class="fab fa-google"></i> Google</button>
+          <button type="button" class="social-btn" onclick="socialLogin('github')"><i class="fab fa-github"></i> GitHub</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="copyright">&copy; <span id="footerYear">2026</span> <a href="#">EduTrack</a> — All Rights Reserved</div>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">FAQ</a>
+      <a href="#" onclick="showSection('contact');return false;">Contact</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Forgot Password Modal -->
+<div class="forgot-overlay" id="forgotOverlay">
+  <div class="forgot-modal">
+    <button class="close-forgot" onclick="closeForgotPassword()"><i class="fas fa-times"></i></button>
+    <h3>Reset Password</h3>
+    <p>Enter your email and we'll send you instructions to reset your password.</p>
+    <div class="form-floating-group">
+      <label>Email Address</label>
+      <div class="input-wrap">
+        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+        <input type="email" id="forgotEmail" placeholder="you@university.edu">
+      </div>
+    </div>
+    <button class="btn-submit" onclick="sendResetLink()">Send Reset Link</button>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/api.js"></script>
+<script>
+/* ── API Wrapper ── */
+window.apiCall = async function(endpoint, options = {}) {
+  const token = localStorage.getItem('token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const body = options.body ? JSON.stringify(options.body) : undefined;
+  const res = await fetch('/api' + endpoint, { ...options, body, headers });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || data.message || 'Request failed');
+  return data;
+};
+
+/* ── Social Login ── */
+window.socialLogin = function(provider) {
+  window.location.href = '/api/auth/' + provider;
+};
+
+
+/* ── Particles ── */
+(function() {
+  const canvas = document.getElementById('particles-canvas');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+  function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resize(); window.addEventListener('resize', resize);
+  for (let i = 0; i < 80; i++) {
+    particles.push({
+      x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.5 + 0.5, o: Math.random() * 0.4 + 0.1
+    });
+  }
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = canvas.width; if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height; if (p.y > canvas.height) p.y = 0;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(30,32,48,${p.o})`; ctx.fill();
+    });
+    
+    // connect nearby particles
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const p = particles[i];
+        const p2 = particles[j];
+        const dx = p.x - p2.x, dy = p.y - p2.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 120) {
+          ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y);
+          ctx.strokeStyle = `rgba(30,32,48,${0.04 * (1 - dist / 120)})`; ctx.lineWidth = 0.5; ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ── Typing Effect ── */
+(function() {
+  const phrases = ['Student Management', 'Academic Success', 'Campus Operations', 'Learning Outcomes'];
+  let idx = 0, charIdx = 0, isDeleting = false;
+  const el = document.querySelector('.gradient-text');
+  function type() {
+    const current = phrases[idx];
+    if (!isDeleting) {
+      el.textContent = current.substring(0, charIdx + 1);
+      charIdx++;
+      if (charIdx === current.length) { isDeleting = true; setTimeout(type, 2000); return; }
+    } else {
+      el.textContent = current.substring(0, charIdx - 1);
+      charIdx--;
+      if (charIdx === 0) { isDeleting = false; idx = (idx + 1) % phrases.length; }
+    }
+    setTimeout(type, isDeleting ? 40 : 80);
+  }
+  setTimeout(type, 1500);
+})();
+
+/* ── Counter Animation ── */
+(function() {
+  const counters = document.querySelectorAll('.counter');
+  if (counters.length) {
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const target = parseFloat(e.target.getAttribute('data-target'));
+          const isDecimal = target % 1 !== 0;
+          const duration = 2000, start = performance.now();
+          function update(now) {
+            const p = Math.min((now - start) / duration, 1);
+            const ease = 1 - Math.pow(1 - p, 3);
+            e.target.textContent = isDecimal ? (ease * target).toFixed(1) : Math.floor(ease * target);
+            if (p < 1) requestAnimationFrame(update);
+            else e.target.textContent = isDecimal ? target.toFixed(1) : Math.floor(target);
+          }
+          requestAnimationFrame(update);
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.5 });
+    counters.forEach(c => obs.observe(c));
+  }
+})();
+
+/* ── Navbar Shadow on Scroll ── */
+window.addEventListener('scroll', () => {
+  const nav = document.querySelector('.navbar-premium');
+  nav.style.boxShadow = window.scrollY > 20 ? '0 1px 8px rgba(0,0,0,0.06)' : 'none';
+}, { passive: true });
+
+/* ── Button Ripple ── */
+document.querySelectorAll('.btn-primary-custom, .btn-submit').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    const ripple = this.querySelector('.ripple');
+    if (!ripple) return;
+    const rect = this.getBoundingClientRect();
+    const x = e.clientX - rect.left, y = e.clientY - rect.top;
+    ripple.style.left = x + 'px'; ripple.style.top = y + 'px';
+    ripple.style.animation = 'none';
+    ripple.offsetHeight;
+    ripple.style.animation = 'rippleAnim 0.6s ease-out';
+  });
+});
+
+/* ── Toggle Password ── */
+function toggleField(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  const icon = btn.querySelector('i');
+  if (inp.type === 'password') { inp.type = 'text'; icon.className = 'fas fa-eye-slash'; }
+  else { inp.type = 'password'; icon.className = 'fas fa-eye'; }
+}
+
+/* ── Switch Tab ── */
+function switchTab(tab) {
+  document.querySelectorAll('.ats-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.form-control').forEach(c => c.classList.remove('is-invalid','is-valid'));
+  document.querySelector(`.ats-btn[onclick*="'${tab}'"]`).classList.add('active');
+  document.getElementById(tab + 'Form').classList.add('active');
+  document.getElementById('alertMessage').className = 'alert-custom';
+
+  document.querySelectorAll('.btn-auth').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.btn-auth[data-tab="${tab}"]`).classList.add('active');
+
+  const header = document.querySelector('.auth-header h3');
+  const sub = document.querySelector('.auth-header p');
+  if (tab === 'login') { header.textContent = 'Welcome Back'; sub.textContent = 'Sign in to your account'; }
+  else { header.textContent = 'Create Account'; sub.textContent = 'Join thousands of students and educators'; }
+}
+
+/* ── Show Section ── */
+function showSection(name) {
+  document.querySelectorAll('.nav-center a').forEach(l => l.classList.remove('active'));
+  document.querySelector(`.nav-center a[data-section="${name}"]`).classList.add('active');
+  document.querySelectorAll('.hero-default, .page-section').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.ats-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.btn-auth').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.btn-auth[data-tab="login"]`).classList.add('active');
+  document.getElementById('alertMessage').className = 'alert-custom';
+
+  if (name === 'home') {
+    document.getElementById('heroDefault').classList.add('active');
+    document.querySelector('.ats-btn[onclick*="\'login\'"]').classList.add('active');
+    document.getElementById('loginForm').classList.add('active');
+  } else {
+    document.getElementById('section' + name.charAt(0).toUpperCase() + name.slice(1)).classList.add('active');
+  }
+}
+
+/* ── Toast ── */
+function showToast(msg, type) {
+  const container = document.getElementById('toastContainer');
+  const icons = { error: 'fa-exclamation-circle', success: 'fa-check-circle', info: 'fa-info-circle' };
+  const toast = document.createElement('div');
+  toast.className = 'toast-item ' + type;
+  toast.innerHTML = '<i class="fas ' + (icons[type] || icons.info) + '"></i><span>' + msg + '</span>';
+  container.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 400);
+  }, 3500);
+}
+
+/* ── Forgot Password ── */
+function showForgotPassword() { document.getElementById('forgotOverlay').classList.add('show'); }
+function closeForgotPassword() { document.getElementById('forgotOverlay').classList.remove('show'); }
+function sendResetLink() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  if (!email) { showToast('Please enter your email', 'error'); return; }
+  showToast('Reset link sent to ' + email, 'success');
+  closeForgotPassword();
+}
+
+/* ── Contact ── */
+function sendContact() {
+  const name = document.getElementById('contactName').value.trim();
+  const email = document.getElementById('contactEmail').value.trim();
+  const msg = document.getElementById('contactMessage').value.trim();
+  const alert = document.getElementById('contactAlert');
+  if (!name || !email || !msg) {
+    alert.className = 'alert-custom error show';
+    alert.innerHTML = '<i class="fas fa-exclamation-circle"></i> Please fill in all fields';
+    return;
+  }
+  alert.className = 'alert-custom success show';
+  alert.innerHTML = '<i class="fas fa-check-circle"></i> Thank you! Your message has been sent.';
+  document.getElementById('contactName').value = '';
+  document.getElementById('contactEmail').value = '';
+  document.getElementById('contactMessage').value = '';
+  setTimeout(() => alert.className = 'alert-custom', 5000);
+}
+
+/* ── Login Handler ── */
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  btn.classList.add('loading'); btn.disabled = true;
+  try {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const data = await apiCall('/auth/login', { method: 'POST', body: { email, password } });
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      showToast('Login successful! Redirecting...', 'success');
+      setTimeout(() => window.location.href = '/dashboard', 600);
+    } else {
+      throw new Error(data.message || 'Login failed');
+    }
+  } catch (err) {
+    showToast(err.message, 'error');
+    btn.classList.remove('loading'); btn.disabled = false;
+  }
+}
+
+/* ── Register Handler ── */
+async function handleRegister(e) {
+  e.preventDefault();
+  const btn = document.getElementById('registerBtn');
+  btn.classList.add('loading'); btn.disabled = true;
+  try {
+    const name = document.getElementById('regName').value;
+    const email = document.getElementById('regEmail').value;
+    const password = document.getElementById('regPassword').value;
+    const role = document.getElementById('regRole').value;
+    if (!role) { showToast('Please select a role', 'error'); btn.classList.remove('loading'); btn.disabled = false; return; }
+    const data = await apiCall('/auth/register', { method: 'POST', body: { name, email, password, role } });
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      showToast('Account created! Redirecting...', 'success');
+      setTimeout(() => window.location.href = '/dashboard', 600);
+    } else {
+      throw new Error(data.message || 'Registration failed');
+    }
+  } catch (err) {
+    showToast(err.message, 'error');
+    btn.classList.remove('loading'); btn.disabled = false;
+  }
+}
+
+/* ── Check URL for OAuth errors ── */
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const error = params.get('error');
+  if (error) {
+    showToast(decodeURIComponent(error).replace(/_/g, ' '), 'error');
+    history.replaceState({}, document.title, window.location.pathname);
+  }
+})();
+
+/* ── Footer Year ── */
+document.getElementById('footerYear').textContent = new Date().getFullYear();
+
+/* ── Close forgot modal on Escape ── */
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeForgotPassword(); });
+</script>
+</body>
+</html>

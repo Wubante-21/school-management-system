@@ -1,0 +1,102 @@
+/* Premium Glassmorphism & Modern Upgrades */
+:root {
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --premium-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+    --premium-shadow-hover: 0 20px 40px -10px rgba(79, 70, 229, 0.15);
+    --gradient-primary: linear-gradient(135deg, var(--primary) 0%, #818cf8 100%);
+    --gradient-success: linear-gradient(135deg, var(--success) 0%, #34d399 100%);
+    --body-bg: #f4f6fb;
+}
+
+body {
+    background: var(--body-bg) !important;
+}
+
+/* Sidebar Upgrades */
+.sidebar {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(0,0,0,0.05) !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.02) !important;
+}
+
+.menu-item {
+    border-radius: 8px !important;
+    margin: 4px 12px !important;
+    padding: 12px 16px !important;
+}
+
+.menu-item:hover, .menu-item.active {
+    background: var(--gradient-primary) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2) !important;
+    border-left: none !important;
+    transform: translateX(4px);
+}
+
+.menu-item:hover i, .menu-item.active i {
+    color: white !important;
+}
+
+/* Topbar Upgrades */
+.topbar {
+    background: rgba(255, 255, 255, 0.8) !important;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.02);
+}
+
+/* Cards & Stat Cards Customization */
+.card, .stat-card {
+    background: white !important;
+    border: none !important;
+    border-radius: 16px !important;
+    box-shadow: var(--premium-shadow) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.stat-card:hover, .card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--premium-shadow-hover) !important;
+}
+
+/* Search Box Polish */
+.search-box input {
+    background: #f8fafc;
+    border-color: transparent !important;
+    transition: all 0.3s ease;
+}
+.search-box input:focus {
+    background: white;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1) !important;
+}
+
+/* Buttons Upgrade */
+.btn-primary {
+    background: var(--gradient-primary) !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2) !important;
+    transition: all 0.3s ease !important;
+    font-weight: 600 !important;
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(79, 70, 229, 0.3) !important;
+}
+
+.btn-success {
+    background: var(--gradient-success) !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+}
+
+/* Login Card Upgrades */
+.login-card {
+    border-radius: 24px !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px);
+}
+

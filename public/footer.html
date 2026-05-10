@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --primary-dark: #3730a3;
+            --secondary: #0ea5e9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #0f172a;
+            --darker: #020617;
+            --gray: #64748b;
+            --gray-light: #94a3b8;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+
+            --footer-bg-start: #0c1222;
+            --footer-bg-end: #1a1040;
+            --footer-accent: #4f46e5;
+            --footer-text: #cbd5e1;
+            --footer-text-muted: #64748b;
+            --footer-card-bg: rgba(255, 255, 255, 0.04);
+            --footer-border: rgba(255, 255, 255, 0.06);
+            --footer-glow: rgba(79, 70, 229, 0.3);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------- DEMO PAGE CONTENT ---------- */
+        .demo-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 100%);
+        }
+
+        .demo-content-card {
+            text-align: center;
+            max-width: 600px;
+        }
+
+        .demo-content-card .icon-ring {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            box-shadow: 0 20px 60px rgba(79, 70, 229, 0.3);
+        }
+
+        .demo-content-card .icon-ring i {
+            font-size: 42px;
+            color: white;
+        }
+
+        .demo-content-card h1 {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 12px;
+        }
+
+        .demo-content-card p {
+            font-size: 16px;
+            color: var(--gray);
+            line-height: 1.7;
+        }
+
+        .demo-content-card .scroll-indicator {
+            margin-top: 40px;
+            animation: bounce 2s infinite;
+        }
+
+        .demo-content-card .scroll-indicator i {
+            font-size: 28px;
+            color: var(--primary);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-12px); }
+            60% { transform: translateY(-6px); }
+        }
+
+        /* =================================================================
+               FOOTER STYLES
+               ================================================================= */
+
+        .sms-footer {
+            position: relative;
+            background: linear-gradient(160deg, var(--footer-bg-start) 0%, #151030 40%, var(--footer-bg-end) 100%);
+            color: var(--footer-text);
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* ---- Floating Decorative Shapes ---- */
+        .footer-shapes {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .footer-shapes .shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.04;
+        }
+
+        .footer-shapes .shape-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--primary);
+            top: -200px;
+            right: -150px;
+            animation: floatShape 12s ease-in-out infinite;
+        }
+
+        .footer-shapes .shape-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--secondary);
+            bottom: -100px;
+            left: -100px;
+            animation: floatShape 15s ease-in-out infinite reverse;
+        }
+
+        .footer-shapes .shape-3 {
+            width: 250px;
+            height: 250px;
+            background: var(--primary-light);
+            top: 40%;
+            left: 50%;
+            animation: floatShape 10s ease-in-out infinite 2s;
+        }
+
+        .footer-shapes .shape-4 {
+            width: 150px;
+            height: 150px;
+            background: var(--secondary);
+            bottom: 30%;
+            right: 10%;
+            animation: floatShape 8s ease-in-out infinite 1s;
+        }
+
+        @keyframes floatShape {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -30px) scale(1.05); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+
+        /* ---- Animated Gradient Border (Top) ---- */
+        .footer-border-glow {
+            position: relative;
+            height: 4px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                var(--primary) 20%,
+                var(--secondary) 40%,
+                var(--success) 60%,
+                var(--primary-light) 80%,
+                transparent 100%
+            );
+            background-size: 200% 100%;
+            animation: borderGlow 3s linear infinite;
+        }
+
+        @keyframes borderGlow {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* ---- Main Footer Content ---- */
+        .footer-content {
+            position: relative;
+            z-index: 1;
+            padding: 70px 0 0;
+        }
+
+        .footer-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: white;
+            margin-bottom: 24px;
+            position: relative;
+            padding-bottom: 12px;
+        }
+
+        .footer-section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 32px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-light), var(--secondary));
+            border-radius: 2px;
+        }
+
+        /* ---- Branding ---- */
+        .footer-brand {
+            margin-bottom: 24px;
+        }
+
+        .footer-brand .brand-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+        }
+
+        .footer-brand .brand-icon i {
+            font-size: 26px;
+            color: white;
+        }
+
+        .footer-brand h3 {
+            font-size: 22px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+
+        .footer-brand .tagline {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+        }
+
+        .footer-brand p {
+            font-size: 14px;
+            line-height: 1.8;
+            color: var(--footer-text);
+            margin-bottom: 0;
+        }
+
+        /* ---- Quick Links & Services ---- */
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 10px;
+        }
+
+        .footer-links li a {
+            color: var(--footer-text);
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            padding-left: 16px;
+        }
+
+        .footer-links li a::before {
+            content: '\f054';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 8px;
+            color: var(--primary-light);
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: all 0.3s ease;
+        }
+
+        .footer-links li a:hover {
+            color: white;
+            padding-left: 22px;
+        }
+
+        .footer-links li a:hover::before {
+            left: 4px;
+            color: white;
+        }
+
+        /* ---- Contact Info ---- */
+        .contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .contact-item .contact-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--footer-card-bg);
+            border: 1px solid var(--footer-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover .contact-icon {
+            background: rgba(79, 70, 229, 0.15);
+            border-color: rgba(79, 70, 229, 0.3);
+            transform: scale(1.05);
+        }
+
+        .contact-item .contact-icon i {
+            font-size: 14px;
+            color: var(--primary-light);
+            transition: all 0.3s ease;
+        }
+
+        .contact-item:hover .contact-icon i {
+            color: white;
+        }
+
+        .contact-item .contact-text {
+            flex: 1;
+        }
+
+        .contact-item .contact-text .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--footer-text-muted);
+            margin-bottom: 2px;
+        }
+
+        .contact-item .contact-text .value {
+            font-size: 14px;
+            color: var(--footer-text);
+            line-height: 1.5;
+        }
+
+        .contact-item .contact-text .value a {
+            color: var(--footer-text);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .contact-item .contact-text .value a:hover {
+            color: var(--primary-light);
+        }
+
+        /* ---- Social Icons ---- */
+        .social-section {
+            margin-top: 32px;
+        }
+
+        .social-section .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--footer-text-muted);
+            margin-bottom: 14px;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .social-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--footer-card-bg);
+            border: 1px solid var(--footer-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--footer-text);
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .social-icon::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 12px;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+        }
+
+        .social-icon:hover {
+            transform: translateY(-4px) scale(1.05);
+            color: white;
+            border-color: transparent;
+        }
+
+        .social-icon:hover::before {
+            opacity: 1;
+        }
+
+        .social-icon i {
+            position: relative;
+            z-index: 1;
+        }
+
+        .social-icon.facebook:hover { background: #1877f2; box-shadow: 0 6px 20px rgba(24, 119, 242, 0.4); }
+        .social-icon.telegram:hover { background: #0088cc; box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4); }
+        .social-icon.linkedin:hover { background: #0a66c2; box-shadow: 0 6px 20px rgba(10, 102, 194, 0.4); }
+        .social-icon.youtube:hover { background: #ff0000; box-shadow: 0 6px 20px rgba(255, 0, 0, 0.4); }
+        .social-icon.github:hover { background: #333; box-shadow: 0 6px 20px rgba(51, 51, 51, 0.4); }
+        .social-icon.instagram:hover { background: #e4405f; box-shadow: 0 6px 20px rgba(228, 64, 95, 0.4); }
+
+        /* ---- Newsletter ---- */
+        .newsletter-section {
+            margin-top: 32px;
+        }
+
+        .newsletter-section .label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--footer-text-muted);
+            margin-bottom: 12px;
+        }
+
+        .newsletter-form {
+            display: flex;
+            gap: 8px;
+        }
+
+        .newsletter-form .input-wrap {
+            flex: 1;
+            position: relative;
+        }
+
+        .newsletter-form .input-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--footer-text-muted);
+            font-size: 14px;
+            transition: color 0.3s ease;
+            pointer-events: none;
+        }
+
+        .newsletter-form .input-wrap input {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            background: var(--footer-card-bg);
+            border: 1px solid var(--footer-border);
+            border-radius: 10px;
+            color: white;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .newsletter-form .input-wrap input::placeholder {
+            color: var(--footer-text-muted);
+        }
+
+        .newsletter-form .input-wrap input:focus {
+            border-color: var(--primary);
+            background: rgba(79, 70, 229, 0.08);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .newsletter-form .input-wrap input:focus ~ i {
+            color: var(--primary-light);
+        }
+
+        .newsletter-form .input-wrap input.is-invalid {
+            border-color: var(--danger);
+        }
+
+        .newsletter-form .input-wrap .invalid-msg {
+            font-size: 11px;
+            color: var(--danger);
+            margin-top: 4px;
+            display: none;
+        }
+
+        .newsletter-form .input-wrap input.is-invalid ~ .invalid-msg {
+            display: block;
+        }
+
+        .newsletter-form .btn-subscribe {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.35s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .newsletter-form .btn-subscribe:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.35);
+        }
+
+        .newsletter-form .btn-subscribe:active {
+            transform: translateY(0);
+        }
+
+        .newsletter-form .btn-subscribe i {
+            font-size: 14px;
+            transition: transform 0.3s ease;
+        }
+
+        .newsletter-form .btn-subscribe:hover i {
+            transform: translateX(3px);
+        }
+
+        .newsletter-success {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 10px;
+            color: var(--success);
+            font-size: 14px;
+        }
+
+        .newsletter-success i {
+            font-size: 18px;
+        }
+
+        .newsletter-success.show {
+            display: flex;
+        }
+
+        /* ---- Statistics Cards ---- */
+        .stats-row {
+            margin-top: 60px;
+            padding: 40px 0;
+            border-top: 1px solid var(--footer-border);
+            border-bottom: 1px solid var(--footer-border);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px 16px;
+        }
+
+        .stat-item .stat-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            margin: 0 auto 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: var(--footer-card-bg);
+            border: 1px solid var(--footer-border);
+            transition: all 0.4s ease;
+        }
+
+        .stat-item:hover .stat-icon {
+            transform: translateY(-4px) scale(1.05);
+            border-color: var(--primary);
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.2);
+        }
+
+        .stat-item .stat-icon.purple i { color: var(--primary-light); }
+        .stat-item .stat-icon.blue i { color: var(--secondary); }
+        .stat-item .stat-icon.green i { color: var(--success); }
+        .stat-item .stat-icon.gold i { color: var(--warning); }
+
+        .stat-item:hover .stat-icon.purple { background: rgba(79, 70, 229, 0.12); border-color: rgba(79, 70, 229, 0.3); }
+        .stat-item:hover .stat-icon.blue { background: rgba(14, 165, 233, 0.12); border-color: rgba(14, 165, 233, 0.3); }
+        .stat-item:hover .stat-icon.green { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.3); }
+        .stat-item:hover .stat-icon.gold { background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.3); }
+
+        .stat-item .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: white;
+            line-height: 1.2;
+            margin-bottom: 2px;
+            letter-spacing: -0.5px;
+        }
+
+        .stat-item .stat-number .plus {
+            font-size: 20px;
+            color: var(--primary-light);
+        }
+
+        .stat-item .stat-label {
+            font-size: 13px;
+            color: var(--footer-text-muted);
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .stat-item .stat-bar {
+            width: 100%;
+            max-width: 120px;
+            height: 3px;
+            background: var(--footer-border);
+            border-radius: 3px;
+            margin: 12px auto 0;
+            overflow: hidden;
+        }
+
+        .stat-item .stat-bar .stat-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            width: 0;
+            transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-item .stat-bar .stat-bar-fill.purple { background: linear-gradient(90deg, var(--primary), var(--primary-light)); }
+        .stat-item .stat-bar .stat-bar-fill.blue { background: linear-gradient(90deg, var(--secondary), #38bdf8); }
+        .stat-item .stat-bar .stat-bar-fill.green { background: linear-gradient(90deg, var(--success), #34d399); }
+        .stat-item .stat-bar .stat-bar-fill.gold { background: linear-gradient(90deg, var(--warning), #fbbf24); }
+
+        /* ---- Footer Bottom ---- */
+        .footer-bottom {
+            padding: 24px 0;
+            border-top: 1px solid var(--footer-border);
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-bottom .copyright {
+            font-size: 13px;
+            color: var(--footer-text-muted);
+        }
+
+        .footer-bottom .copyright .heart {
+            color: var(--danger);
+            display: inline-block;
+            animation: heartBeat 1.5s ease infinite;
+        }
+
+        @keyframes heartBeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .footer-bottom .copyright a {
+            color: var(--primary-light);
+            text-decoration: none;
+        }
+
+        .footer-bottom .footer-bottom-links {
+            display: flex;
+            gap: 24px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .footer-bottom .footer-bottom-links a {
+            color: var(--footer-text-muted);
+            text-decoration: none;
+            font-size: 13px;
+            transition: color 0.3s ease;
+            position: relative;
+        }
+
+        .footer-bottom .footer-bottom-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--primary-light);
+            transition: width 0.3s ease;
+        }
+
+        .footer-bottom .footer-bottom-links a:hover {
+            color: white;
+        }
+
+        .footer-bottom .footer-bottom-links a:hover::after {
+            width: 100%;
+        }
+
+        .footer-bottom .footer-bottom-links .divider {
+            color: var(--footer-border);
+            font-size: 13px;
+        }
+
+        /* ---- Back to Top ---- */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(79, 70, 229, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px) scale(0.9);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 32px rgba(79, 70, 229, 0.45);
+        }
+
+        .back-to-top:focus-visible {
+            outline: 2px solid white;
+            outline-offset: 3px;
+        }
+
+        /* ---- Responsive ---- */
+        @media (max-width: 991px) {
+            .footer-content {
+                padding: 50px 0 0;
+            }
+
+            .footer-section-title {
+                margin-bottom: 18px;
+            }
+
+            .footer-brand {
+                margin-bottom: 32px;
+            }
+
+            .stat-item .stat-number {
+                font-size: 28px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .footer-content {
+                padding: 40px 0 0;
+            }
+
+            .footer-section {
+                margin-bottom: 32px;
+            }
+
+            .footer-section-title {
+                font-size: 13px;
+            }
+
+            .footer-brand h3 {
+                font-size: 20px;
+            }
+
+            .newsletter-form {
+                flex-direction: column;
+            }
+
+            .newsletter-form .btn-subscribe {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stat-item {
+                padding: 16px 12px;
+            }
+
+            .stat-item .stat-number {
+                font-size: 26px;
+            }
+
+            .footer-bottom {
+                text-align: center;
+            }
+
+            .footer-bottom .footer-bottom-links {
+                justify-content: center;
+                margin-top: 12px;
+                gap: 16px;
+            }
+
+            .stats-row {
+                margin-top: 40px;
+                padding: 30px 0;
+            }
+
+            .footer-shapes .shape-1 {
+                width: 300px;
+                height: 300px;
+                top: -100px;
+                right: -100px;
+            }
+
+            .footer-shapes .shape-2 {
+                width: 200px;
+                height: 200px;
+            }
+
+            .footer-shapes .shape-3 {
+                display: none;
+            }
+
+            .back-to-top {
+                bottom: 20px;
+                right: 20px;
+                width: 44px;
+                height: 44px;
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 575px) {
+            .footer-content {
+                padding: 30px 0 0;
+            }
+
+            .footer-brand .brand-icon {
+                width: 48px;
+                height: 48px;
+            }
+
+            .footer-brand .brand-icon i {
+                font-size: 22px;
+            }
+
+            .social-icons {
+                gap: 8px;
+            }
+
+            .social-icon {
+                width: 38px;
+                height: 38px;
+                font-size: 14px;
+            }
+
+            .stat-item .stat-number {
+                font-size: 24px;
+            }
+        }
+
+        /* ---- Accessibility: Focus Styles ---- */
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible {
+            outline: 2px solid var(--primary-light);
+            outline-offset: 2px;
+        }
+
+        /* ---- Smooth scroll ---- */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* ---- Reduced motion ---- */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            html {
+                scroll-behavior: auto;
+            }
+        }
+
+        /* ---- Glass Divider ---- */
+        .glass-divider {
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.08) 20%,
+                rgba(255, 255, 255, 0.12) 50%,
+                rgba(255, 255, 255, 0.08) 80%,
+                transparent 100%
+            );
+            margin: 0;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================
+    DEMO PAGE CONTENT (to show footer in context)
+    ============================================================ -->
+    <main class="demo-content" id="top">
+        <div class="demo-content-card">
+            <div class="icon-ring">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h1>Student Management System</h1>
+            <p>
+                A comprehensive platform for managing students, courses, attendance, and academic records.
+                Scroll down to explore the footer design.
+            </p>
+            <div class="scroll-indicator">
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </div>
+    </main>
+
+    <!-- ============================================================
+    FOOTER
+    ============================================================ -->
+    <footer class="sms-footer" role="contentinfo" aria-label="Site footer">
+
+        <!-- Animated Gradient Border -->
+        <div class="footer-border-glow" aria-hidden="true"></div>
+
+        <!-- Floating Background Shapes -->
+        <div class="footer-shapes" aria-hidden="true">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+            <div class="shape shape-4"></div>
+        </div>
+
+        <!-- Main Footer Content -->
+        <div class="footer-content">
+            <div class="container">
+
+                <!-- ============================================
+                SECTION ROW: Brand, Links, Services, Contact
+                ============================================ -->
+                <div class="row g-4">
+
+                    <!-- Column 1: System Branding -->
+                    <div class="col-lg-3 col-md-6 footer-section">
+                        <div class="footer-brand">
+                            <div class="brand-icon" aria-hidden="true">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <h3>EduTrack</h3>
+                            <div class="tagline">Smart Education Management Platform</div>
+                            <p>
+                                A modern, all-in-one student management system designed for
+                                universities and schools. Streamline administration, track
+                                academic progress, and enhance educational outcomes.
+                            </p>
+                        </div>
+
+                        <!-- Newsletter -->
+                        <div class="newsletter-section">
+                            <div class="label">Subscribe to Newsletter</div>
+                            <form class="newsletter-form" id="newsletterForm" novalidate>
+                                <div class="input-wrap">
+                                    <i class="fas fa-envelope" aria-hidden="true"></i>
+                                    <input
+                                        type="email"
+                                        id="newsletterEmail"
+                                        placeholder="Enter your email"
+                                        required
+                                        aria-label="Email for newsletter subscription"
+                                    >
+                                    <div class="invalid-msg">Please enter a valid email</div>
+                                </div>
+                                <button type="submit" class="btn-subscribe" aria-label="Subscribe">
+                                    Subscribe
+                                    <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                </button>
+                            </form>
+                            <div class="newsletter-success" id="newsletterSuccess" role="status">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Thank you for subscribing!</span>
+                            </div>
+                        </div>
+
+                        <!-- Social Icons -->
+                        <div class="social-section">
+                            <div class="label">Follow Us</div>
+                            <div class="social-icons">
+                                <a href="#" class="social-icon facebook" aria-label="Facebook" title="Facebook">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
+                                <a href="#" class="social-icon telegram" aria-label="Telegram" title="Telegram">
+                                    <i class="fab fa-telegram-plane"></i>
+                                </a>
+                                <a href="#" class="social-icon linkedin" aria-label="LinkedIn" title="LinkedIn">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                <a href="#" class="social-icon youtube" aria-label="YouTube" title="YouTube">
+                                    <i class="fab fa-youtube"></i>
+                                </a>
+                                <a href="#" class="social-icon github" aria-label="GitHub" title="GitHub">
+                                    <i class="fab fa-github"></i>
+                                </a>
+                                <a href="#" class="social-icon instagram" aria-label="Instagram" title="Instagram">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Quick Links -->
+                    <div class="col-lg-3 col-md-6 footer-section">
+                        <h4 class="footer-section-title">Quick Links</h4>
+                        <nav aria-label="Quick links">
+                            <ul class="footer-links">
+                                <li><a href="#"><i class="fas fa-home" aria-hidden="true"></i>Home</a></li>
+                                <li><a href="#"><i class="fas fa-chart-bar" aria-hidden="true"></i>Dashboard</a></li>
+                                <li><a href="#"><i class="fas fa-user-graduate" aria-hidden="true"></i>Students</a></li>
+                                <li><a href="#"><i class="fas fa-book" aria-hidden="true"></i>Courses</a></li>
+                                <li><a href="#"><i class="fas fa-building" aria-hidden="true"></i>Departments</a></li>
+                                <li><a href="#"><i class="fas fa-poll" aria-hidden="true"></i>Results</a></li>
+                                <li><a href="#"><i class="fas fa-calendar-check" aria-hidden="true"></i>Attendance</a></li>
+                                <li><a href="#"><i class="fas fa-headset" aria-hidden="true"></i>Contact</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+
+                    <!-- Column 3: Student Services -->
+                    <div class="col-lg-3 col-md-6 footer-section">
+                        <h4 class="footer-section-title">Student Services</h4>
+                        <nav aria-label="Student services">
+                            <ul class="footer-links">
+                                <li><a href="#"><i class="fas fa-pencil-alt" aria-hidden="true"></i>Course Registration</a></li>
+                                <li><a href="#"><i class="fas fa-calendar-alt" aria-hidden="true"></i>Exam Schedule</a></li>
+                                <li><a href="#"><i class="fas fa-calendar" aria-hidden="true"></i>Academic Calendar</a></li>
+                                <li><a href="#"><i class="fas fa-user-circle" aria-hidden="true"></i>Student Portal</a></li>
+                                <li><a href="#"><i class="fas fa-book-open" aria-hidden="true"></i>Library Access</a></li>
+                                <li><a href="#"><i class="fas fa-download" aria-hidden="true"></i>Downloads</a></li>
+                            </ul>
+                        </nav>
+                    </div>
+
+                    <!-- Column 4: Contact Information -->
+                    <div class="col-lg-3 col-md-6 footer-section">
+                        <h4 class="footer-section-title">Contact Us</h4>
+
+                        <div class="contact-item">
+                            <div class="contact-icon" aria-hidden="true">
+                                <i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div class="contact-text">
+                                <div class="label">Address</div>
+                                <div class="value">
+                                    123 University Avenue,<br>
+                                    Education District, ED 10001
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="contact-item">
+                            <div class="contact-icon" aria-hidden="true">
+                                <i class="fas fa-phone-alt"></i>
+                            </div>
+                            <div class="contact-text">
+                                <div class="label">Phone</div>
+                                <div class="value">
+                                    <a href="tel:+1234567890">+1 (234) 567-890</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="contact-item">
+                            <div class="contact-icon" aria-hidden="true">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="contact-text">
+                                <div class="label">Email</div>
+                                <div class="value">
+                                    <a href="mailto:contact@edutrack.edu">contact@edutrack.edu</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="contact-item">
+                            <div class="contact-icon" aria-hidden="true">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="contact-text">
+                                <div class="label">Office Hours</div>
+                                <div class="value">
+                                    Mon - Fri: 8:00 AM - 6:00 PM<br>
+                                    Sat: 9:00 AM - 2:00 PM
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ============================================
+                STATISTICS ROW
+                ============================================ -->
+                <div class="stats-row">
+                    <div class="row g-3">
+                        <div class="col-6 col-md-3">
+                            <div class="stat-item">
+                                <div class="stat-icon purple" aria-hidden="true">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                                <div class="stat-number">
+                                    <span class="counter" data-target="12500">0</span><span class="plus">+</span>
+                                </div>
+                                <p class="stat-label">Total Students</p>
+                                <div class="stat-bar">
+                                    <div class="stat-bar-fill purple" data-width="92"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-item">
+                                <div class="stat-icon blue" aria-hidden="true">
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                </div>
+                                <div class="stat-number">
+                                    <span class="counter" data-target="850">0</span><span class="plus">+</span>
+                                </div>
+                                <p class="stat-label">Total Instructors</p>
+                                <div class="stat-bar">
+                                    <div class="stat-bar-fill blue" data-width="78"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-item">
+                                <div class="stat-icon green" aria-hidden="true">
+                                    <i class="fas fa-book-open"></i>
+                                </div>
+                                <div class="stat-number">
+                                    <span class="counter" data-target="340">0</span><span class="plus">+</span>
+                                </div>
+                                <p class="stat-label">Total Courses</p>
+                                <div class="stat-bar">
+                                    <div class="stat-bar-fill green" data-width="85"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="stat-item">
+                                <div class="stat-icon gold" aria-hidden="true">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <div class="stat-number">
+                                    <span class="counter" data-target="94">0</span><span class="plus">%</span>
+                                </div>
+                                <p class="stat-label">Graduation Rate</p>
+                                <div class="stat-bar">
+                                    <div class="stat-bar-fill gold" data-width="94"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Glass Divider -->
+            <hr class="glass-divider" role="separator" aria-hidden="true">
+
+            <!-- ============================================
+            FOOTER BOTTOM
+            ============================================ -->
+            <div class="footer-bottom">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <p class="copyright mb-0">
+                                &copy; <span id="copyrightYear">2026</span>
+                                <a href="#">EduTrack</a> —
+                                All Rights Reserved.
+                                Made with <span class="heart" aria-label="love">&hearts;</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="footer-bottom-links">
+                                <a href="#">Privacy Policy</a>
+                                <span class="divider" aria-hidden="true">|</span>
+                                <a href="#">Terms &amp; Conditions</a>
+                                <span class="divider" aria-hidden="true">|</span>
+                                <a href="#">FAQ</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- ============================================================
+    BACK TO TOP BUTTON
+    ============================================================ -->
+    <button
+        class="back-to-top"
+        id="backToTop"
+        aria-label="Back to top"
+        title="Back to top"
+    >
+        <i class="fas fa-arrow-up" aria-hidden="true"></i>
+    </button>
+
+    <!-- ============================================================
+    SCRIPTS
+    ============================================================ -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function() {
+            'use strict';
+
+            /* ---- Back to Top ---- */
+            const backToTop = document.getElementById('backToTop');
+
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 400) {
+                    backToTop.classList.add('show');
+                } else {
+                    backToTop.classList.remove('show');
+                }
+            }, { passive: true });
+
+            backToTop.addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            /* ---- Animated Counters (Intersection Observer) ---- */
+            const counters = document.querySelectorAll('.counter');
+
+            function animateCounter(el) {
+                const target = parseInt(el.getAttribute('data-target'), 10);
+                const duration = 2000;
+                const startTime = performance.now();
+
+                function update(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    const current = Math.floor(easeOut * target);
+                    el.textContent = current.toLocaleString();
+                    if (progress < 1) {
+                        requestAnimationFrame(update);
+                    } else {
+                        el.textContent = target.toLocaleString();
+                    }
+                }
+
+                requestAnimationFrame(update);
+            }
+
+            const counterObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        animateCounter(entry.target);
+                        counterObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            counters.forEach(function(counter) {
+                counterObserver.observe(counter);
+            });
+
+            /* ---- Animated Stat Bars ---- */
+            const statBars = document.querySelectorAll('.stat-bar-fill');
+
+            const barObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        const width = entry.target.getAttribute('data-width');
+                        entry.target.style.width = width + '%';
+                        barObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+
+            statBars.forEach(function(bar) {
+                barObserver.observe(bar);
+            });
+
+            /* ---- Newsletter Form ---- */
+            const newsletterForm = document.getElementById('newsletterForm');
+            const newsletterEmail = document.getElementById('newsletterEmail');
+            const newsletterSuccess = document.getElementById('newsletterSuccess');
+
+            newsletterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const email = newsletterEmail.value.trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+                if (!email || !emailRegex.test(email)) {
+                    newsletterEmail.classList.add('is-invalid');
+                    return;
+                }
+
+                newsletterEmail.classList.remove('is-invalid');
+                newsletterEmail.value = '';
+                newsletterForm.style.display = 'none';
+                newsletterSuccess.classList.add('show');
+
+                setTimeout(function() {
+                    newsletterSuccess.classList.remove('show');
+                    newsletterForm.style.display = 'flex';
+                }, 4000);
+            });
+
+            newsletterEmail.addEventListener('input', function() {
+                if (this.classList.contains('is-invalid')) {
+                    this.classList.remove('is-invalid');
+                }
+            });
+
+            /* ---- Dynamically set copyright year ---- */
+            document.getElementById('copyrightYear').textContent = new Date().getFullYear();
+
+        })();
+    </script>
+
+</body>
+</html>
