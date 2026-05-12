@@ -30,6 +30,13 @@ app.use(cookieSession({
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use('/api', (req, res, next) => {
+    if (!db.getPool()) {
+        return res.status(503).json({ error: 'Database not available. Please configure a MySQL database.' });
+    }
+    next();
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/teacher', teacherRoutes);
@@ -57,32 +64,34 @@ async function startServer() {
     try {
         await db.initialize();
         console.log('Database initialized successfully');
-
-        if (isVercel) return;
-
-        const server = app.listen(PORT, () => {
-            console.log(`School Management System running on http://localhost:${PORT}`);
-            console.log('\n=== Default Login Credentials ===');
-            console.log('Admin:   admin@school.com / admin123');
-            console.log('Teacher: john.smith@school.com / teacher123');
-            console.log('Student: michael.brown@student.com / student123');
-            console.log('Parent:  robert.brown@parent.com / parent123');
-            console.log('================================\n');
-        });
-
-        server.on('error', (err) => {
-            if (err.code === 'EADDRINUSE') {
-                console.log(`Port ${PORT} is in use, trying port ${PORT + 1}...`);
-                server.listen(PORT + 1);
-            } else {
-                console.error('Server error:', err);
-                process.exit(1);
-            }
-        });
     } catch (error) {
-        console.error('Failed to start server:', error);
-        process.exit(1);
+        console.error('Database initialization failed:', error.message);
+        if (!isVercel) {
+            process.exit(1);
+        }
     }
+
+    if (isVercel) return;
+
+    const server = app.listen(PORT, () => {
+        console.log(`School Management System running on http://localhost:${PORT}`);
+        console.log('\n=== Default Login Credentials ===');
+        console.log('Admin:   admin@school.com / admin123');
+        console.log('Teacher: john.smith@school.com / teacher123');
+        console.log('Student: michael.brown@student.com / student123');
+        console.log('Parent:  robert.brown@parent.com / parent123');
+        console.log('================================\n');
+    });
+
+    server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.log(`Port ${PORT} is in use, trying port ${PORT + 1}...`);
+            server.listen(PORT + 1);
+        } else {
+            console.error('Server error:', err);
+            process.exit(1);
+        }
+    });
 }
 
 startServer();
