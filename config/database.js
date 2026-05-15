@@ -41,8 +41,16 @@ function getDbConfig() {
 }
 
 let pool;
+let usingSqlite = false;
 
 async function initialize() {
+    if (process.env.USE_SQLITE === 'true' || process.env.VERCEL) {
+        usingSqlite = true;
+        const sqliteDb = require('./sqlite-db');
+        await sqliteDb.initialize();
+        pool = sqliteDb.getPool();
+        return pool;
+    }
     try {
         const config = getDbConfig();
         pool = config.uri
@@ -59,8 +67,12 @@ async function initialize() {
         console.log('Database initialized successfully');
         return pool;
     } catch (error) {
-        console.error('Database initialization failed:', error.message);
-        throw error;
+        console.error('MySQL init failed:', error.message);
+        usingSqlite = true;
+        const sqliteDb = require('./sqlite-db');
+        await sqliteDb.initialize();
+        pool = sqliteDb.getPool();
+        return pool;
     }
 }
 
@@ -292,13 +304,21 @@ async function createTables(connection) {
     console.log('Database tables created/verified successfully');
 }
 
-function getPool() {
-    return pool;
-}
-
 async function query(sql, params = []) {
+    if (usingSqlite) {
+        const sqliteDb = require('./sqlite-db');
+        return sqliteDb.query(sql, params);
+    }
     const [rows] = await pool.execute(sql, params);
     return rows;
+}
+
+function getPool() {
+    if (usingSqlite) {
+        const sqliteDb = require('./sqlite-db');
+        return sqliteDb.getPool();
+    }
+    return pool;
 }
 
 async function seedData(connection) {
