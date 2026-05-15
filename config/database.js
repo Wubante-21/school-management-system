@@ -2,24 +2,42 @@ const mysql = require('mysql2/promise');
 const bcrypt = require('bcryptjs');
 
 function getDbConfig() {
+  let config;
   if (process.env.DATABASE_URL) {
-    return { uri: process.env.DATABASE_URL };
+    try {
+      const url = new URL(process.env.DATABASE_URL);
+      config = {
+        host: url.hostname,
+        port: parseInt(url.port || '3306'),
+        user: decodeURIComponent(url.username),
+        password: decodeURIComponent(url.password),
+        database: url.pathname.replace(/^\//, '') || 'defaultdb',
+      };
+    } catch {
+      config = { uri: process.env.DATABASE_URL };
+      return config;
+    }
+  } else {
+    config = {
+      host: process.env.DB_HOST || 'localhost',
+      user: process.env.DB_USER || 'root',
+      password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_NAME || 'school_management',
+      port: parseInt(process.env.DB_PORT || '3306'),
+    };
   }
-  return {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_NAME || 'school_management',
-    port: parseInt(process.env.DB_PORT || '3306'),
-    waitForConnections: true,
-    connectionLimit: parseInt(process.env.DB_POOL_LIMIT || '10'),
-    queueLimit: 0,
-    ssl: process.env.DB_SSL === 'true'
-        ? process.env.DB_CA_CERT
-            ? { ca: process.env.DB_CA_CERT, rejectUnauthorized: true }
-            : { rejectUnauthorized: false }
-        : undefined
-  };
+  config.waitForConnections = true;
+  config.connectionLimit = parseInt(process.env.DB_POOL_LIMIT || '10');
+  config.queueLimit = 0;
+  const needsSsl = process.env.DB_SSL === 'true'
+    || config.host !== 'localhost'
+    || (process.env.DATABASE_URL || '').includes('ssl');
+  config.ssl = needsSsl
+    ? process.env.DB_CA_CERT
+        ? { ca: process.env.DB_CA_CERT, rejectUnauthorized: true }
+        : { rejectUnauthorized: false }
+    : undefined;
+  return config;
 }
 
 let pool;
