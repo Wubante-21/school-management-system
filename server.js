@@ -61,6 +61,26 @@ app.use('/api', async (req, res, next) => {
     next();
 });
 
+app.get('/api/debug', (req, res) => {
+    const pool = db.getPool();
+    res.json({
+        hasPool: !!pool,
+        initFailed,
+        isVercel,
+        env: {
+            DB_HOST: process.env.DB_HOST || '(not set)',
+            DB_PORT: process.env.DB_PORT || '(not set)',
+            DB_USER: process.env.DB_USER || '(not set)',
+            DB_NAME: process.env.DB_NAME || '(not set)',
+            DB_SSL: process.env.DB_SSL || '(not set)',
+            has_DATABASE_URL: !!process.env.DATABASE_URL,
+            DATABASE_URL_preview: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 30) + '...' : '(not set)',
+            VERCEL_URL: process.env.VERCEL_URL || '(not set)',
+            NODE_ENV: process.env.NODE_ENV || '(not set)'
+        }
+    });
+});
+
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/teacher', teacherRoutes);

@@ -71,8 +71,9 @@ router.post('/login', [
             }
         });
     } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Login error:', error.message);
+        console.error('Login error stack:', error.stack);
+        res.status(500).json({ error: 'Login failed: ' + error.message });
     }
 });
 
@@ -124,8 +125,8 @@ router.post('/register', [
             user: { id: userId, name, email, role }
         });
     } catch (error) {
-        console.error('Registration error:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Registration error:', error.message);
+        res.status(500).json({ error: 'Registration failed: ' + error.message });
     }
 });
 
