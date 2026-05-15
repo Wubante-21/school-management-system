@@ -1,16 +1,16 @@
-const initSqlJs = require('sql.js');
+const Database = require('better-sqlite3');
 const bcrypt = require('bcryptjs');
 
 let db = null;
 
-async function initialize() {
-    const SQL = await initSqlJs();
-    db = new SQL.Database();
-    db.run('PRAGMA foreign_keys = ON');
-    db.run('PRAGMA journal_mode = MEMORY');
+function initialize() {
+    db = new Database(':memory:');
+    db.pragma('journal_mode = MEMORY');
+    db.pragma('foreign_keys = ON');
     createTables();
     seedData();
     console.log('SQLite in-memory database initialized');
+    return db;
 }
 
 function getPool() {
@@ -23,30 +23,30 @@ function query(sql, params = []) {
     sql = sql.replace(/\bNOW\(\)/g, "datetime('now')");
     sql = sql.replace(/ON DUPLICATE KEY UPDATE\s+\w+\s*=\s*\?/gi, '');
     sql = sql.replace(/\bINSERT IGNORE\b/g, 'INSERT OR IGNORE');
-    if (/^\s*UPDATE/i.test(sql)) {
-        sql = sql.replace(/updated_at\s*=\s*datetime\('now'\)/i, "updated_at = datetime('now')");
+
+    const isSelect = /^\s*SELECT/i.test(sql);
+    try {
+        const stmt = db.prepare(sql);
+        if (isSelect) {
+            const rows = params.length > 0 ? stmt.all(...params) : stmt.all();
+            if (/COUNT/i.test(sql) && rows.length === 0) return [{ 'COUNT(*)': 0 }];
+            if (rows.length === 0) return [];
+            return rows;
+        } else {
+            const info = params.length > 0 ? stmt.run(...params) : stmt.run();
+            return { insertId: info.lastInsertRowid, affectedRows: info.changes };
+        }
+    } catch (err) {
+        console.error('SQLite query error:', err.message);
+        console.error('SQL:', sql);
+        console.error('Params:', params);
+        throw err;
     }
-    const stmt = db.prepare(sql);
-    if (params.length > 0) stmt.bind(params);
-    const rows = [];
-    while (stmt.step()) {
-        rows.push(stmt.getAsObject());
-    }
-    stmt.free();
-    if (/^SELECT/i.test(sql.trim())) {
-        if (/COUNT/i.test(sql) && rows.length === 0) return [{ 'COUNT(*)': 0 }];
-        return rows;
-    }
-    const lastInsert = db.exec("SELECT last_insert_rowid() as insertId");
-    const changes = db.exec("SELECT changes() as affected");
-    const insertId = lastInsert.length > 0 ? lastInsert[0].values[0][0] : null;
-    const affectedRows = changes.length > 0 ? changes[0].values[0][0] : 0;
-    return { insertId, affectedRows: affectedRows };
 }
 
 function exec(sql) {
     if (!db) throw new Error('Database not initialized');
-    db.run(sql);
+    db.exec(sql);
 }
 
 function createTables() {
@@ -317,8 +317,8 @@ function seedData() {
     const stu1 = query(`SELECT id FROM students WHERE roll_number = ?`, ['STU0001']);
     query(`INSERT INTO student_parent (student_id, parent_id, relationship) VALUES (?, ?, ?)`, [stu1[0].id, parent[0].id, 'Father']);
 
-    const subjects = query(`SELECT id FROM subjects WHERE code IN (?, ?, ?, ?)`, ['CHEM101', 'ENG101', 'HIST101', 'BIO101']);
-    const chem = subjects[0], eng = subjects[1], hist = subjects[2], bio = subjects[3];
+    const subjectsArr = query(`SELECT id FROM subjects WHERE code IN (?, ?, ?, ?)`, ['CHEM101', 'ENG101', 'HIST101', 'BIO101']);
+    const eng = subjectsArr[1];
 
     query(`INSERT INTO assignments (title, description, class_id, subject_id, teacher_id, due_date, max_marks) VALUES (?, ?, ?, ?, ?, date('now','+7 days'), 20)`, ['Mathematics Homework Ch. 5', 'Complete exercises 1-10 from Chapter 5: Quadratic Equations', class10a[0].id, math[0].id, teacher1[0].id]);
     query(`INSERT INTO assignments (title, description, class_id, subject_id, teacher_id, due_date, max_marks) VALUES (?, ?, ?, ?, ?, date('now','+5 days'), 30)`, ['Physics Lab Report', 'Write a lab report on the simple pendulum experiment', class10a[0].id, phy[0].id, teacher2[0].id]);
@@ -331,11 +331,9 @@ function seedData() {
         [phy[0].id, teacher2[0].id, '10:00', '11:00', 'Room 101']
     ];
     periods.forEach((p, pi) => {
-        days.forEach((d, di) => {
-            if (pi < 3) {
-                query(`INSERT INTO timetable (class_id, subject_id, teacher_id, day, period, start_time, end_time, room) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                    [class10a[0].id, p[0], p[1], d, pi + 1, p[2], p[3], p[4]]);
-            }
+        days.forEach(d => {
+            query(`INSERT INTO timetable (class_id, subject_id, teacher_id, day, period, start_time, end_time, room) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [class10a[0].id, p[0], p[1], d, pi + 1, p[2], p[3], p[4]]);
         });
     });
 
