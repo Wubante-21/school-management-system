@@ -14,7 +14,11 @@ function getDbConfig() {
     waitForConnections: true,
     connectionLimit: parseInt(process.env.DB_POOL_LIMIT || '10'),
     queueLimit: 0,
-    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: true } : undefined
+    ssl: process.env.DB_SSL === 'true'
+        ? process.env.DB_CA_CERT
+            ? { ca: process.env.DB_CA_CERT, rejectUnauthorized: true }
+            : { rejectUnauthorized: false }
+        : undefined
   };
 }
 

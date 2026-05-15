@@ -31,21 +31,31 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 let initPromise = null;
+let initFailed = false;
 app.use('/api', async (req, res, next) => {
     if (!db.getPool()) {
+        if (initFailed) {
+            return res.status(503).json({ error: 'Database connection failed. Check your DB_HOST/DB_USER/DB_PASSWORD/DB_NAME/DB_SSL env vars. For Aiven, ensure you have DB_SSL=true. If issues persist, try setting DB_SSL=true and DB_CA_CERT to your CA certificate from Aiven.' });
+        }
         if (!initPromise) {
-            initPromise = db.initialize().catch(err => {
+            initPromise = db.initialize().then(pool => {
+                initFailed = false;
+                return pool;
+            }).catch(err => {
                 console.error('DB init failed:', err.message);
+                console.error('DB init stack:', err.stack);
+                initFailed = true;
                 initPromise = null;
             });
         }
         try {
             await initPromise;
         } catch (e) {
-            return res.status(503).json({ error: 'Database not available. Please configure a MySQL database (e.g., PlanetScale, Aiven, AWS RDS). Set DATABASE_URL or DB_HOST/DB_USER/DB_PASSWORD/DB_NAME in Vercel environment variables.' });
+            initFailed = true;
+            return res.status(503).json({ error: 'Database connection error: ' + e.message });
         }
         if (!db.getPool()) {
-            return res.status(503).json({ error: 'Database not available. Please configure a MySQL database (e.g., PlanetScale, Aiven, AWS RDS). Set DATABASE_URL or DB_HOST/DB_USER/DB_PASSWORD/DB_NAME in Vercel environment variables.' });
+            return res.status(503).json({ error: 'Database not available after init. Check DB_HOST/DB_PORT/DB_USER/DB_PASSWORD/DB_NAME/DB_SSL in Vercel env vars.' });
         }
     }
     next();
