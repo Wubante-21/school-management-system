@@ -314,16 +314,22 @@ const API = {
     
     admin: {
         async getDashboard() { return API.request('/admin/dashboard'); },
+        async getUsers() { return API.request('/admin/users'); },
         async users() { return API.request('/admin/users'); },
+        async getStudents() { return API.request('/admin/students'); },
         async students() { return API.request('/admin/students'); },
+        async getTeachers() { return API.request('/admin/teachers'); },
         async teachers() { return API.request('/admin/teachers'); },
+        async getClasses() { return API.request('/admin/classes'); },
         async classes() { return API.request('/admin/classes'); },
+        async getSubjects() { return API.request('/admin/subjects'); },
         async subjects() { return API.request('/admin/subjects'); },
         async attendance() { return API.request('/admin/reports/attendance'); },
         async grades() { return API.request('/admin/reports/grades'); },
         async analytics() { return API.request('/admin/reports/analytics'); },
         async settings() { return API.request('/admin/settings'); },
         async assignments() { return API.request('/teacher/assignments'); },
+        async getNotifications() { return API.request('/admin/notifications'); },
         async createStudent(data) { return API.request('/admin/students', { method: 'POST', body: data }); },
         async createTeacher(data) { return API.request('/admin/teachers', { method: 'POST', body: data }); },
         async createClass(data) { return API.request('/admin/classes', { method: 'POST', body: data }); },
@@ -335,7 +341,7 @@ const API = {
     },
     
     teacher: {
-        async dashboard() { return API.request('/teacher/dashboard'); },
+        async getDashboard() { return API.request('/teacher/dashboard'); },
         async classes() { return API.request('/teacher/classes'); },
         async assignments() { return API.request('/teacher/assignments'); },
         async timetable() { return API.request('/teacher/timetable'); },
@@ -351,7 +357,7 @@ const API = {
     },
     
     student: {
-        async dashboard() { return API.request('/student/dashboard'); },
+        async getDashboard() { return API.request('/student/dashboard'); },
         async profile() { return API.request('/student/profile'); },
         async attendance() { return API.request('/student/attendance'); },
         async grades() { return API.request('/student/grades'); },
@@ -365,10 +371,11 @@ const API = {
     },
     
     parent: {
-        async dashboard() { return API.request('/parent/dashboard'); },
+        async getDashboard() { return API.request('/parent/dashboard'); },
         async children() { return API.request('/parent/children'); },
         async messages() { return API.request('/parent/messages'); },
         async fees() { return API.request('/parent/fees'); },
+        async getNotifications() { return API.request('/parent/notifications'); },
         async getChildAttendance(childId) { return API.request(`/parent/child/${childId}/attendance`); },
         async getChildGrades(childId) { return API.request(`/parent/child/${childId}/grades`); },
         async getChildAssignments(childId) { return API.request(`/parent/child/${childId}/assignments`); },
@@ -578,6 +585,7 @@ window.loadDashboard = async function() {
         }
     } catch (error) {
         console.error('Load dashboard error:', error);
+        document.getElementById('pageContent').innerHTML = '<div class="alert alert-danger">Failed to load dashboard. Please try refreshing the page.</div>';
         window.toast('Failed to load dashboard', 'error');
     }
 }
@@ -682,15 +690,17 @@ function renderAdminDashboard(data) {
 }
 
 function renderTeacherDashboard(data) {
-    const { teacher, myClasses = [], stats } = data;
+    const { teacher, myClasses = [], notifications = [], stats = {} } = data;
     
     document.getElementById('pageContent').innerHTML = `
         <div class="page-title">Teacher Dashboard</div>
         <p class="page-subtitle">Welcome, ${teacher?.name || window.currentUser.name}</p>
         
         <div class="stat-cards">
-            <div class="stat-card"><div class="stat-card-icon primary"><i class="fas fa-school"></i></div><h3>${stats?.classesCount || 0}</h3><p>My Classes</p></div>
-            <div class="stat-card"><div class="stat-card-icon success"><i class="fas fa-tasks"></i></div><h3>${stats?.pendingAssignments || 0}</h3><p>Pending Assignments</p></div>
+            <div class="stat-card"><div class="stat-card-icon primary"><i class="fas fa-school"></i></div><h3>${stats.classesCount || 0}</h3><p>My Classes</p></div>
+            <div class="stat-card"><div class="stat-card-icon success"><i class="fas fa-user-graduate"></i></div><h3>${stats.totalStudents || 0}</h3><p>Total Students</p></div>
+            <div class="stat-card"><div class="stat-card-icon warning"><i class="fas fa-tasks"></i></div><h3>${stats.pendingAssignments || 0}</h3><p>Pending Assignments</p></div>
+            <div class="stat-card"><div class="stat-card-icon info"><i class="fas fa-bell"></i></div><h3>${notifications.length}</h3><p>Notifications</p></div>
         </div>
 
         <div class="row mt-4">
@@ -714,20 +724,56 @@ function renderTeacherDashboard(data) {
                 </div>
             </div>
         </div>
+
+        ${notifications.length ? `
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header"><h5><i class="fas fa-bell me-2"></i>Recent Notifications</h5></div>
+                    <div class="card-body p-0">
+                        <table class="table mb-0">
+                            <thead><tr><th>Title</th><th>Message</th><th>Date</th></tr></thead>
+                            <tbody>
+                                ${notifications.map(n => `<tr><td>${window.escapeHtml(n.title)}</td><td>${window.escapeHtml(n.message)}</td><td>${new Date(n.created_at).toLocaleDateString()}</td></tr>`).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>` : ''}
     `;
 }
 
 function renderStudentDashboard(data) {
-    const { student, recentGrades = [], upcomingAssignments = [] } = data;
+    const { student, todayAttendance, recentGrades = [], upcomingAssignments = [], notifications = [], stats = {} } = data;
+    const attendanceStatus = todayAttendance?.status || 'No record';
+    const attendanceBadgeClass = todayAttendance?.status === 'present' ? 'present' : todayAttendance?.status === 'absent' ? 'absent' : 'late';
     
     document.getElementById('pageContent').innerHTML = `
         <div class="page-title">Student Dashboard</div>
         <p class="page-subtitle">Welcome, ${student?.name || window.currentUser.name} - ${student?.class_name || 'No Class'}</p>
         
         <div class="stat-cards">
-            <div class="stat-card"><div class="stat-card-icon success"><i class="fas fa-chart-line"></i></div><h3>${recentGrades.length}</h3><p>Recent Grades</p></div>
-            <div class="stat-card"><div class="stat-card-icon warning"><i class="fas fa-tasks"></i></div><h3>${upcomingAssignments.length}</h3><p>Pending Assignments</p></div>
+            <div class="stat-card"><div class="stat-card-icon primary"><i class="fas fa-calendar-check"></i></div><h3>${todayAttendance ? attendanceStatus.charAt(0).toUpperCase() + attendanceStatus.slice(1) : 'No Record'}</h3><p>Today's Attendance</p></div>
+            <div class="stat-card"><div class="stat-card-icon success"><i class="fas fa-chart-line"></i></div><h3>${stats.totalGrades || 0}</h3><p>Recent Grades</p></div>
+            <div class="stat-card"><div class="stat-card-icon warning"><i class="fas fa-tasks"></i></div><h3>${stats.pendingAssignments || 0}</h3><p>Pending Assignments</p></div>
+            <div class="stat-card"><div class="stat-card-icon info"><i class="fas fa-bell"></i></div><h3>${notifications.length}</h3><p>Notifications</p></div>
         </div>
+
+        ${todayAttendance ? `
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header"><h5><i class="fas fa-clipboard-check me-2"></i>Today's Attendance</h5></div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <span class="attendance-status ${attendanceBadgeClass}" style="font-size:1.2rem;padding:8px 20px;">${attendanceStatus}</span>
+                            <span class="ms-3 text-muted">${todayAttendance.remarks ? window.escapeHtml(todayAttendance.remarks) : 'No remarks'}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>` : ''}
 
         <div class="row mt-4">
             <div class="col-md-6">
@@ -1295,7 +1341,8 @@ async function loadProfile() {
     } else if (window.currentUser.role === 'teacher') {
         profile = await window.API.teacher.getProfile();
     } else if (window.currentUser.role === 'student') {
-        profile = await window.API.student.getProfile();
+        const res = await window.API.student.getProfile();
+        profile = res.profile || {};
     } else if (window.currentUser.role === 'parent') {
         profile = await window.API.parent.getProfile();
     }
@@ -1497,7 +1544,7 @@ async function showAddModal(type) {
             break;
         case 'assignment':
             title = 'Post Assignment';
-            const [aClasses, subjects] = await Promise.all([API.admin.classes(), API.admin.subjects()]);
+            const [aClasses, subjects] = await Promise.all([API.admin.getClasses(), API.admin.getSubjects()]);
             formContent = `
                 <form id="addAssignmentForm" class="needs-validation" novalidate>
                     <div class="mb-3">
@@ -1993,6 +2040,9 @@ async function updateNotificationBadge() {
         } else if (window.currentUser.role === 'admin') {
             const data = await window.API.admin.getNotifications();
             notifications = data.notifications || data || [];
+        } else if (window.currentUser.role === 'parent') {
+            const data = await window.API.parent.getNotifications();
+            notifications = data.notifications || data || [];
         }
         const count = Array.isArray(notifications) ? notifications.length : 0;
         document.getElementById('notificationCount').textContent = count;
@@ -2013,6 +2063,9 @@ async function loadNotifications() {
             notifications = data.notifications || data || [];
         } else if (window.currentUser.role === 'admin') {
             const data = await window.API.admin.getNotifications();
+            notifications = data.notifications || data || [];
+        } else if (window.currentUser.role === 'parent') {
+            const data = await window.API.parent.getNotifications();
             notifications = data.notifications || data || [];
         }
         

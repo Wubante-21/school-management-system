@@ -51,6 +51,15 @@ router.get('/dashboard', async (req, res) => {
             ORDER BY created_at DESC LIMIT 5
         `, [req.user.id]);
 
+        const totalGradesRows = await query(
+            'SELECT COUNT(*) as count FROM grades WHERE student_id = ?',
+            [student.id]
+        );
+        const totalAssignmentsRows = await query(
+            'SELECT COUNT(*) as count FROM assignments WHERE class_id = ? AND due_date >= ?',
+            [student.class_id, today]
+        );
+
         res.json({
             success: true,
             student: { ...student, name: user?.name, email: user?.email, class_name: classInfo?.name },
@@ -58,7 +67,10 @@ router.get('/dashboard', async (req, res) => {
             recentGrades,
             upcomingAssignments,
             notifications,
-            stats: { totalGrades: recentGrades.length, pendingAssignments: upcomingAssignments.length }
+            stats: {
+                totalGrades: totalGradesRows[0].count,
+                pendingAssignments: totalAssignmentsRows[0].count
+            }
         });
     } catch (error) {
         console.error('Student dashboard error:', error);
@@ -69,10 +81,12 @@ router.get('/dashboard', async (req, res) => {
 router.get('/profile', async (req, res) => {
     try {
         const studentRows = await query('SELECT * FROM students WHERE user_id = ?', [req.user.id]);
-        const userRows = await query('SELECT * FROM users WHERE id = ?', [req.user.id]);
-        const classRows = await query('SELECT * FROM classes WHERE id = ?', [studentRows[0]?.class_id]);
+        if (studentRows.length === 0) return res.status(404).json({ error: 'Student not found' });
 
         const student = studentRows[0];
+        const userRows = await query('SELECT * FROM users WHERE id = ?', [req.user.id]);
+        const classRows = await query('SELECT * FROM classes WHERE id = ?', [student.class_id || null]);
+
         const user = userRows[0];
         const classInfo = classRows[0];
 

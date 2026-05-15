@@ -30,6 +30,7 @@ async function initialize() {
         const connection = await pool.getConnection();
         console.log('Connected to MySQL database successfully');
         
+        await createTables(connection);
         await seedData(connection);
         
         connection.release();
@@ -39,6 +40,234 @@ async function initialize() {
         console.error('Database initialization failed:', error.message);
         throw error;
     }
+}
+
+async function createTables(connection) {
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            role ENUM('admin','teacher','student','parent') NOT NULL DEFAULT 'student',
+            phone VARCHAR(50) DEFAULT '',
+            address TEXT,
+            avatar VARCHAR(500) DEFAULT NULL,
+            status ENUM('active','inactive','suspended') NOT NULL DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS students (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) DEFAULT '',
+            class_id INT DEFAULT NULL,
+            roll_number VARCHAR(50) DEFAULT NULL,
+            date_of_birth DATE DEFAULT NULL,
+            gender VARCHAR(20) DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS teachers (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL UNIQUE,
+            name VARCHAR(255) NOT NULL,
+            employee_id VARCHAR(50) DEFAULT NULL UNIQUE,
+            qualification VARCHAR(255) DEFAULT '',
+            specialization VARCHAR(255) DEFAULT '',
+            experience INT DEFAULT 0,
+            joining_date DATE DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS parents (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) DEFAULT '',
+            phone VARCHAR(50) DEFAULT '',
+            occupation VARCHAR(255) DEFAULT '',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS classes (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            grade VARCHAR(50) DEFAULT NULL,
+            section VARCHAR(50) DEFAULT NULL,
+            room VARCHAR(50) DEFAULT '',
+            capacity INT DEFAULT 40,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS subjects (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            code VARCHAR(50) NOT NULL UNIQUE,
+            description TEXT,
+            type VARCHAR(50) DEFAULT 'core',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS teacher_subjects (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            teacher_id INT NOT NULL,
+            subject_id INT NOT NULL,
+            class_id INT NOT NULL,
+            FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE CASCADE,
+            FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+            FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS student_parent (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            student_id INT NOT NULL,
+            parent_id INT NOT NULL,
+            relationship VARCHAR(50) DEFAULT NULL,
+            FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+            FOREIGN KEY (parent_id) REFERENCES parents(id) ON DELETE CASCADE
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS attendance (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            student_id INT NOT NULL,
+            class_id INT DEFAULT NULL,
+            date DATE NOT NULL,
+            status ENUM('present','absent','late','excused') NOT NULL DEFAULT 'present',
+            remarks TEXT,
+            recorded_by INT DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS grades (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            student_id INT NOT NULL,
+            subject_id INT DEFAULT NULL,
+            class_id INT DEFAULT NULL,
+            assessment_type VARCHAR(100) DEFAULT NULL,
+            score DECIMAL(10,2) DEFAULT 0,
+            max_score DECIMAL(10,2) DEFAULT 100,
+            grade VARCHAR(10) DEFAULT NULL,
+            remarks TEXT,
+            recorded_by INT DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS assignments (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            title VARCHAR(255) NOT NULL,
+            description TEXT,
+            class_id INT DEFAULT NULL,
+            subject_id INT DEFAULT NULL,
+            teacher_id INT DEFAULT NULL,
+            due_date DATE DEFAULT NULL,
+            max_marks INT DEFAULT 100,
+            status VARCHAR(50) DEFAULT 'active',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+            FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+            FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE SET NULL
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS submissions (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            assignment_id INT NOT NULL,
+            student_id INT NOT NULL,
+            content TEXT,
+            submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            grade VARCHAR(10) DEFAULT NULL,
+            feedback TEXT,
+            FOREIGN KEY (assignment_id) REFERENCES assignments(id) ON DELETE CASCADE,
+            FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS timetable (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            class_id INT DEFAULT NULL,
+            subject_id INT DEFAULT NULL,
+            teacher_id INT DEFAULT NULL,
+            day VARCHAR(20) NOT NULL,
+            period INT DEFAULT 1,
+            start_time VARCHAR(10) DEFAULT NULL,
+            end_time VARCHAR(10) DEFAULT NULL,
+            room VARCHAR(50) DEFAULT NULL,
+            FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
+            FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE,
+            FOREIGN KEY (teacher_id) REFERENCES teachers(id) ON DELETE SET NULL
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS messages (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            sender_id INT NOT NULL,
+            receiver_id INT NOT NULL,
+            subject VARCHAR(255) DEFAULT '',
+            content TEXT NOT NULL,
+            is_read TINYINT(1) DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS notifications (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            message TEXT,
+            type VARCHAR(50) DEFAULT 'info',
+            is_read TINYINT(1) DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS settings (
+            setting_key VARCHAR(100) PRIMARY KEY,
+            setting_value TEXT
+        )
+    `);
+    await connection.query(`
+        CREATE TABLE IF NOT EXISTS fees (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            student_id INT NOT NULL,
+            amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+            due_date DATE DEFAULT NULL,
+            status ENUM('paid','unpaid','partial','overdue') DEFAULT 'unpaid',
+            paid_date DATE DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+        )
+    `);
+    console.log('Database tables created/verified successfully');
 }
 
 function getPool() {

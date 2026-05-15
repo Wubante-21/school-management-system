@@ -30,9 +30,23 @@ app.use(cookieSession({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/api', (req, res, next) => {
+let initPromise = null;
+app.use('/api', async (req, res, next) => {
     if (!db.getPool()) {
-        return res.status(503).json({ error: 'Database not available. Please configure a MySQL database.' });
+        if (!initPromise) {
+            initPromise = db.initialize().catch(err => {
+                console.error('DB init failed:', err.message);
+                initPromise = null;
+            });
+        }
+        try {
+            await initPromise;
+        } catch (e) {
+            return res.status(503).json({ error: 'Database not available. Please configure a MySQL database (e.g., PlanetScale, Aiven, AWS RDS). Set DATABASE_URL or DB_HOST/DB_USER/DB_PASSWORD/DB_NAME in Vercel environment variables.' });
+        }
+        if (!db.getPool()) {
+            return res.status(503).json({ error: 'Database not available. Please configure a MySQL database (e.g., PlanetScale, Aiven, AWS RDS). Set DATABASE_URL or DB_HOST/DB_USER/DB_PASSWORD/DB_NAME in Vercel environment variables.' });
+        }
     }
     next();
 });
@@ -94,6 +108,8 @@ async function startServer() {
     });
 }
 
-startServer();
+if (!isVercel) {
+    startServer();
+}
 
 module.exports = app;

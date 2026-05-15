@@ -16,7 +16,8 @@ router.get('/dashboard', async (req, res) => {
         const teacher = teacherRows[0];
 
         const classRows = await query(`
-            SELECT c.*, ts.subject_id, s.name as subject_name 
+            SELECT c.*, ts.subject_id, s.name as subject_name,
+            (SELECT COUNT(*) FROM students WHERE class_id = c.id) as student_count
             FROM classes c 
             JOIN teacher_subjects ts ON c.id = ts.class_id 
             JOIN subjects s ON ts.subject_id = s.id 
@@ -24,16 +25,40 @@ router.get('/dashboard', async (req, res) => {
         `, [teacher.id]);
 
         const today = new Date().toISOString().split('T')[0];
+
         const pendingRows = await query(
             'SELECT COUNT(*) as count FROM assignments WHERE teacher_id = ? AND due_date >= ?',
             [teacher.id, today]
         );
 
+        const distinctClassRows = await query(
+            'SELECT COUNT(DISTINCT class_id) as count FROM teacher_subjects WHERE teacher_id = ?',
+            [teacher.id]
+        );
+
+        const totalStudentsRows = await query(`
+            SELECT COUNT(DISTINCT s.id) as count
+            FROM students s
+            JOIN teacher_subjects ts ON s.class_id = ts.class_id
+            WHERE ts.teacher_id = ?
+        `, [teacher.id]);
+
+        const notifications = await query(`
+            SELECT * FROM notifications 
+            WHERE user_id = ? AND is_read = false 
+            ORDER BY created_at DESC LIMIT 5
+        `, [req.user.id]);
+
         res.json({
             success: true,
             teacher,
             myClasses: classRows,
-            stats: { classesCount: classRows.length, pendingAssignments: pendingRows[0].count }
+            notifications,
+            stats: {
+                classesCount: distinctClassRows[0].count,
+                totalStudents: totalStudentsRows[0].count,
+                pendingAssignments: pendingRows[0].count
+            }
         });
     } catch (error) {
         console.error('Teacher dashboard error:', error);

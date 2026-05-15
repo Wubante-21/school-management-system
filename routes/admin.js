@@ -176,8 +176,8 @@ router.post('/assignments', [
 
         const { title, description, class_id, subject_id, due_date, max_marks } = req.body;
 
-        const [teachers] = await query('SELECT id FROM teachers LIMIT 1');
-        if (!teachers || teachers.length === 0) {
+        const teachers = await query('SELECT id FROM teachers LIMIT 1');
+        if (teachers.length === 0) {
             return res.status(403).json({ error: 'No teacher found. Please add a teacher first.' });
         }
         const teacherId = teachers[0].id;
@@ -778,60 +778,6 @@ router.get('/reports/analytics', async (req, res) => {
             subjectStats: subjectStats.map(s => ({ ...s, average: Math.round(s.average) }))
         });
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-router.get('/messages', async (req, res) => {
-    try {
-        const { type } = req.query;
-
-        let messages;
-        if (type === 'sent') {
-            messages = await query(`
-                SELECT m.*, u.name as receiver_name 
-                FROM messages m 
-                JOIN users u ON m.receiver_id = u.id 
-                WHERE m.sender_id = ?
-                ORDER BY m.created_at DESC
-            `, [req.user.id]);
-        } else {
-            messages = await query(`
-                SELECT m.*, u.name as sender_name 
-                FROM messages m 
-                JOIN users u ON m.sender_id = u.id 
-                WHERE m.receiver_id = ?
-                ORDER BY m.created_at DESC
-            `, [req.user.id]);
-        }
-
-        res.json({ success: true, messages });
-    } catch (error) {
-        console.error('Get messages error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-router.post('/messages', [body('receiver_id').notEmpty(), body('content').notEmpty()], async (req, res) => {
-    try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-
-        const { receiver_id, subject, content } = req.body;
-
-        await query(
-            `INSERT INTO messages (sender_id, receiver_id, subject, content) VALUES (?, ?, ?, ?)`,
-            [req.user.id, receiver_id, subject || '', content]
-        );
-
-        await query(
-            `INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)`,
-            [receiver_id, 'New Message', `New message: ${subject || 'No subject'}`, 'message']
-        );
-
-        res.status(201).json({ success: true, message: 'Message sent successfully' });
-    } catch (error) {
-        console.error('Send message error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
